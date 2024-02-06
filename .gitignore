@@ -1,3 +1,8 @@
+build/
+.vscode/
+
+CMakeUserPresets.json
+.clang-format
 # Prerequisites
 *.d
 

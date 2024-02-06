@@ -1,0 +1,7 @@
+{
+  "dependencies": [
+    "glad",
+    "glm",
+    "stb"
+  ]
+}
