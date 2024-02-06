@@ -1,0 +1,51 @@
+{
+    "version": 5,
+    "configurePresets": 
+    [
+        {
+            "name": "Config-Base",
+            "hidden": true,
+            "generator": "Ninja Multi-Config",
+            "cacheVariables":
+            {
+                "CMAKE_CONFIGURATION_TYPES" : "Debug;Release",
+                "CMAKE_EXPORT_COMPILE_COMMANDS" : true,
+                "CMAKE_TOOLCHAIN_FILE": { "value": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake", "type": "FILEPATH" }
+            }
+        },
+        {
+            "name": "Windows-Config-Base",
+            "inherits": "Config-Base",
+            "hidden": true,
+            "cacheVariables":
+            {
+                "CMAKE_CXX_COMPILER" : "cl",
+                "CMAKE_C_COMPILER" : "cl"
+            }
+        },
+        {
+            "name": "x64-Windows-Config-Base",
+            "inherits": "Windows-Config-Base",
+            "hidden": true,
+            "architecture": {
+                "value": "x64"
+            },
+            "toolset": {
+                "value": "v143,host=x64"
+            },
+            "binaryDir": "build/x64"
+        },
+        {
+            "name": "x86-Windows-Config-Base",
+            "inherits": "Windows-Config-Base",
+            "hidden": true,
+            "architecture": {
+                "value": "x64"
+            },
+            "toolset": {
+                "value": "v143,host=x64"
+            },
+            "binaryDir": "build/x64"
+        }
+    ]
+}
