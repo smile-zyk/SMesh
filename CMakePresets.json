@@ -1,32 +1,32 @@
 {
     "version": 5,
-    "configurePresets": 
-    [
+    "configurePresets": [
         {
             "name": "Config-Base",
             "hidden": true,
             "generator": "Ninja Multi-Config",
-            "cacheVariables":
-            {
-                "CMAKE_CONFIGURATION_TYPES" : "Debug;Release",
-                "CMAKE_EXPORT_COMPILE_COMMANDS" : true,
-                "CMAKE_TOOLCHAIN_FILE": { "value": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake", "type": "FILEPATH" }
+            "cacheVariables": {
+                "CMAKE_CONFIGURATION_TYPES": "Debug;Release",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": true,
+                "CMAKE_TOOLCHAIN_FILE": {
+                    "value": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+                    "type": "FILEPATH"
+                },
+                "Qt6_PREFIX_PATH": "$env{Qt6_PREFIX_PATH}"
             }
         },
         {
             "name": "Windows-Config-Base",
             "inherits": "Config-Base",
             "hidden": true,
-            "cacheVariables":
-            {
-                "CMAKE_CXX_COMPILER" : "cl",
-                "CMAKE_C_COMPILER" : "cl"
+            "cacheVariables": {
+                "CMAKE_CXX_COMPILER": "cl",
+                "CMAKE_C_COMPILER": "cl"
             }
         },
         {
-            "name": "x64-Windows-Config-Base",
+            "name": "x64-Windows-Config",
             "inherits": "Windows-Config-Base",
-            "hidden": true,
             "architecture": {
                 "value": "x64"
             },
@@ -36,16 +36,38 @@
             "binaryDir": "build/x64"
         },
         {
-            "name": "x86-Windows-Config-Base",
+            "name": "x86-Windows-Config",
             "inherits": "Windows-Config-Base",
-            "hidden": true,
             "architecture": {
-                "value": "x64"
+                "value": "x86"
             },
             "toolset": {
                 "value": "v143,host=x64"
             },
-            "binaryDir": "build/x64"
+            "binaryDir": "build/x86"
+        }
+    ],
+    "buildPresets": 
+    [
+        {
+            "name": "x64-Windows-Build-Debug",
+            "configurePreset": "x64-Windows-Config",
+            "configuration": "Debug"
+        },
+        {
+            "name": "x64-Windows-Build-Release",
+            "configurePreset": "x64-Windows-Config",
+            "configuration": "Release"
+        },
+        {
+            "name": "x86-Windows-Build-Debug",
+            "configurePreset": "x86-Windows-Config",
+            "configuration": "Debug"
+        },
+        {
+            "name": "x86-Windows-Build-Release",
+            "configurePreset": "x86-Windows-Config",
+            "configuration": "Release"
         }
     ]
 }
