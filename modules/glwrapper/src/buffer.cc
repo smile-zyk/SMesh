@@ -1,5 +1,4 @@
 #include "Buffer.h"
-#include <iostream>
 
 glwrapper::Buffer::Buffer()
 {
@@ -8,7 +7,6 @@ glwrapper::Buffer::Buffer()
 
 glwrapper::Buffer::~Buffer()
 {
-	std::cout << "~Buffer()" << std::endl;
 	GLCall(glDeleteBuffers(1, &id));
 }
 

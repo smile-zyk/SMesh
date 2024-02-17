@@ -1,4 +1,4 @@
-#include "gl_client.h"
+#include "glclient.h"
 
 using namespace glwrapper;
 

@@ -1,6 +1,6 @@
 #include "shader.h"
+#include "glcommon.h"
 
-#include <iostream>
 #include <fstream>
 #include <sstream>
 
@@ -21,8 +21,7 @@ Shader::Shader(GLenum type, const char* path)
 	}
 	catch (std::ifstream::failure e)
 	{
-		std::cout << "ERROR::SHADERPROGRAM::SHADER::FILE_NOT_SUCCESFULLY_READ :\n" 
-			<< e.what() << std::endl;
+		gl_logger->error("shader program file read fail, %s", e.what());
 	}
 	this->path = path;
 	const char* shaderCodeStr = vertexCode.c_str();
@@ -36,13 +35,11 @@ Shader::Shader(GLenum type, const char* path)
 	if (!success)
 	{
 		GLCall(glGetShaderInfoLog(id, 512, NULL, infoLog));
-		std::cout << "ERROR::SHADERPROGRAM::SHADER::COMPILATION_FAILED\n"
-			<< "SHADER FILE PATH:" << path << '\n' << infoLog << std::endl;
+		gl_logger->error("%s shader compile failed, %s", path, infoLog);
 	}
 }
 
 Shader::~Shader()
 {
-	std::cout << "~Shader()" << std::endl;
 	GLCall(glDeleteShader(id));
 }

@@ -2,7 +2,6 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 #include <cmath>
-#include <iostream>
 
 using namespace glwrapper;
 
@@ -34,10 +33,6 @@ Texture::Texture(GLenum type, const char* path)
 		GLCall(glTextureStorage2D(id, levels, internalFormat, width, height));
 		GLCall(glTextureSubImage2D(id, 0, 0, 0, width, height, externalFormat,
 			GL_UNSIGNED_BYTE, data));
-		for (GLenum err; (err = glGetError()) != GL_NO_ERROR;)
-		{
-			std::cout << err << std::endl;
-		}
 	}
 	else if (GL_TEXTURE_3D == type)
 	{
@@ -48,7 +43,6 @@ Texture::Texture(GLenum type, const char* path)
 
 glwrapper::Texture::~Texture()
 {
-	std::cout << "~Texture()" << std::endl;
 	GLCall(glDeleteTextures(1, &id));
 }
 

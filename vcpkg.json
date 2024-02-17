@@ -2,6 +2,15 @@
   "dependencies": [
     "glad",
     "glm",
-    "stb"
+    "stb",
+    "spdlog",
+    "imgui",
+    "openmesh"
+  ],
+  "overrides": [
+    { 
+        "name": "imgui", 
+        "version": "1.83"
+    }
   ]
 }

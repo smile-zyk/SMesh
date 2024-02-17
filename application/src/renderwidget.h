@@ -1,6 +1,7 @@
 #pragma once
-#include "gl_client.h"
+#include "glclient.h"
 #include <QOpenGLWidget>
+#include <QTimer>
 
 class RenderWidget : public QOpenGLWidget
 {
@@ -13,5 +14,6 @@ class RenderWidget : public QOpenGLWidget
     virtual void resizeGL(int w, int h) Q_DECL_OVERRIDE;
     virtual void paintGL() Q_DECL_OVERRIDE;
   private:
-    glwrapper::GLClient gl_client_;
+    glwrapper::GLClient glclient_;
+    QTimer tick_timer_;
 };

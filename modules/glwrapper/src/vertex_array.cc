@@ -1,5 +1,4 @@
 #include "vertex_array.h"
-#include <iostream>
 
 glwrapper::VertexArray::VertexArray()
 {
@@ -8,7 +7,6 @@ glwrapper::VertexArray::VertexArray()
 
 glwrapper::VertexArray::~VertexArray()
 {
-    std::cout << "~VertexArray()" << std::endl;
     GLCall(glDeleteVertexArrays(1, &id));
 }
 

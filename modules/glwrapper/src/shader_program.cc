@@ -1,5 +1,5 @@
 #include "shader_program.h"
-#include <iostream>
+#include "glcommon.h"
 
 using namespace glwrapper;
 
@@ -20,7 +20,6 @@ ShaderProgram::ShaderProgram(const char* vertexPath, const char* fragmentPath, c
 
 ShaderProgram::~ShaderProgram()
 {
-	std::cout << "~Program()" << std::endl;
 	GLCall(glDeleteProgram(id));
 }
 
@@ -33,8 +32,7 @@ void ShaderProgram::link()
 	if (!success)
 	{
 		GLCall(glGetProgramInfoLog(id, 1024, NULL, infoLog));
-		std::cout << "ERROR::PROGRAM_LINKING_ERROR\n" 
-			<< infoLog << "\n" << std::endl;
+		gl_logger->error("shader program link error, %s", infoLog);
 	}
 }
 

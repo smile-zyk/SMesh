@@ -1,5 +1,5 @@
 #pragma once
-#include "gl_common.h"
+#include "glcommon.h"
 #include "shader_program.h"
 #include "vertex_array.h"
 
