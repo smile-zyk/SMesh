@@ -1,5 +1,5 @@
 #include "renderer.h"
-#include "log.h"
+#include "smesh/log/log.h"
 
 namespace smesh
 {

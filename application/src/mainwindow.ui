@@ -26,7 +26,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>22</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -48,7 +48,7 @@
   <customwidget>
    <class>RenderWidget</class>
    <extends>QOpenGLWidget</extends>
-   <header>renderwidget.h</header>
+   <header location="global">smesh/qt/renderwidget.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

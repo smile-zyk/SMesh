@@ -5,3 +5,8 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent), ui(new Ui::MainWin
 {
     ui->setupUi(this);
 }
+
+MainWindow::~MainWindow()
+{
+    delete ui;
+}
