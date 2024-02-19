@@ -4,6 +4,21 @@ namespace smesh
 {
     Mesh::Mesh()
     {
-        MyMesh mesh;
+        
+    }
+    
+    Mesh::~Mesh()
+    {
+        
+    }
+    
+    bool Mesh::ReadFromFile(const std::string &path)
+    {
+        return false;
+    }
+    
+    bool Mesh::WriteToFile(const std::string &path)
+    {
+        return false;
     }
 }

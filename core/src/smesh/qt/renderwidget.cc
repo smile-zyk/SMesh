@@ -4,26 +4,24 @@
 #include "renderwidget.h"
 
 #include "smesh/log/log.h"
-#include "smesh/render/renderer.h"
 
 #include <glclient.h>
 #include <imgui.h>
 #include <QtImGui.h>
+#include <memory>
 
 
 RenderWidget::RenderWidget(QWidget *parent): QOpenGLWidget(parent), tick_timer_(this)
 {
-    glclient_ = new glwrapper::GLClient();
+    glclient_ = std::make_unique<glwrapper::GLClient>();
     connect(&tick_timer_, &QTimer::timeout, this, [this](){update();});
     tick_timer_.start(16);
     smesh::Log::Init();
     SMESH_INFO("application init!");
-    smesh::Renderer r;
 }
 
 RenderWidget::~RenderWidget()
 {
-    delete glclient_;
 }
 
 void RenderWidget::initializeGL()

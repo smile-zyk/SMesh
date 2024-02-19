@@ -22,6 +22,6 @@ class SMESH_API RenderWidget : public QOpenGLWidget
     virtual void resizeGL(int w, int h) Q_DECL_OVERRIDE;
     virtual void paintGL() Q_DECL_OVERRIDE;
   private:
-    glwrapper::GLClient* glclient_{};
+    std::unique_ptr<glwrapper::GLClient> glclient_{};
     QTimer tick_timer_;
 };
