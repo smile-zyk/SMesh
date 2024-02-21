@@ -14,6 +14,7 @@ find_package(OpenMesh CONFIG REQUIRED)
 
 aux_source_directory(src/smesh SRC_DIR)
 aux_source_directory(src/smesh/log SRC_DIR)
+aux_source_directory(src/smesh/mesh SRC_DIR)
 aux_source_directory(src/smesh/render SRC_DIR)
 aux_source_directory(src/smesh/qt SRC_DIR)
 
@@ -26,6 +27,5 @@ target_link_libraries(${PROJECT_NAME} PRIVATE qt_imgui_widgets)
 target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Widgets Qt5::Core Qt5::Gui)
 target_link_libraries(${PROJECT_NAME} PRIVATE spdlog::spdlog)
 target_link_libraries(${PROJECT_NAME} PUBLIC OpenMeshCore OpenMeshTools)
-
 target_compile_definitions(${PROJECT_NAME} PRIVATE SMESH_PLATFORM_WINDOWS SMESH_BUILD_LIBRARY)
 target_compile_definitions(${PROJECT_NAME} PRIVATE _USE_MATH_DEFINES)

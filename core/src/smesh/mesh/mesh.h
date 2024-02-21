@@ -2,6 +2,7 @@
 #include <string>
 #include <memory>
 
+#include <glm/vec3.hpp>
 #include <OpenMesh/Core/Mesh/Attributes.hh>
 #include <OpenMesh/Core/Mesh/Traits.hh>
 #include <OpenMesh/Core/Mesh/TriMesh_ArrayKernelT.hh>
@@ -10,6 +11,20 @@
 
 namespace smesh
 {
+    struct VertexRenderData
+    {
+        VertexRenderData(glm::vec3 p, glm::vec3 n, glm::vec3 c = {0.5f, 0.5f, 0.5f}): position(p), normal(n), color(c){}
+        glm::vec3 position;
+        glm::vec3 normal;
+        glm::vec3 color;
+    };
+
+    struct MeshRenderData
+    {
+        std::vector<VertexRenderData> render_points;
+        std::vector<unsigned int> render_indices;
+    };
+
     struct MeshTraits : public OpenMesh::DefaultTraits
     {
         VertexAttributes(OpenMesh::Attributes::Normal | OpenMesh::Attributes::Color |
@@ -20,7 +35,7 @@ namespace smesh
 
     typedef OpenMesh::TriMesh_ArrayKernelT<MeshTraits> MeshBase;
 
-    struct MeshRenderData;
+    class ModelObject;
 
     class SMESH_API Mesh : public MeshBase
     {
@@ -30,10 +45,15 @@ namespace smesh
         virtual ~Mesh();
         bool ReadFromFile(const std::string &path);
         bool WriteToFile(const std::string &path);
-        void Modifed(bool is_topo_change = false);
-        MeshRenderData* get_render_data() { return render_data_.get(); }
+        void RefreshRenderData();
+        void RefreshIndexRenderData();
+        void RefreshVertexRenderData();
+        void RefreshVertexRenderData(std::vector<unsigned int> vertex_list);
+        MeshRenderData* render_data() { return render_data_.get(); }
+        std::vector<std::weak_ptr<ModelObject>>& ref_object_list() { return ref_object_list_; }
       private:
-        // cache render data
+        // cache render data for renderer use
         std::unique_ptr<MeshRenderData> render_data_;
+        std::vector<std::weak_ptr<ModelObject>> ref_object_list_;
     };
 } // namespace smesh

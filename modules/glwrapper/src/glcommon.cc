@@ -12,10 +12,8 @@ bool glwrapper::GLLoad()
 	gl_logger->set_level(spdlog::level::trace);
 	if(!gladLoadGL())
 	{
-		gl_logger->error("opengl init failed");
 		return false;
 	}
-	gl_logger->info("opengl init successed");
 	return true;
 }
 

@@ -1,27 +1,28 @@
 #pragma once
-#include <glm/fwd.hpp>
+#include <memory>
 #include <vector>
-#include <glm/glm.hpp>
 
+#include "shader_program.h"
 #include "smesh/core.h"
+#include "smesh/qt/modelobject.h"
+
+#include "camera.h"
+#include "smesh/render/camera.h"
+
 
 namespace smesh
 {
-    struct VertexRenderData
-    {
-        glm::vec3 position;
-    };
-
-    struct MeshRenderData
-    {
-        std::vector<glm::vec3> render_points;
-        std::vector<int> render_indices;
-    };
-
+    typedef glm::vec<2, int> Size;
+    
     class SMESH_API Renderer
     {
     public:
-        Renderer();
+        Renderer(const Size& size);
         ~Renderer(){}
+        void draw(ModelObject* object);
+    private:
+        std::unique_ptr<Camera> camera_;
+        std::unique_ptr<glwrapper::ShaderProgram> object_shader_program_;
+        Size size_;
     };
 }

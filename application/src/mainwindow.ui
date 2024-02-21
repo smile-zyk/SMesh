@@ -16,7 +16,7 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <widget class="RenderWidget" name="render_widget"/>
+     <widget class="smesh::RenderWidget" name="render_widget"/>
     </item>
    </layout>
   </widget>
@@ -46,7 +46,7 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>RenderWidget</class>
+   <class>smesh::RenderWidget</class>
    <extends>QOpenGLWidget</extends>
    <header location="global">smesh/qt/renderwidget.h</header>
   </customwidget>

@@ -1,52 +1,68 @@
 // glad must include at first
-#include <glad/glad.h>
-
+#include "smesh/render/renderer.h"
 #include "renderwidget.h"
 
 #include "smesh/log/log.h"
 
-#include <glclient.h>
-#include <imgui.h>
 #include <QtImGui.h>
+#include <gl/gl.h>
+#include <glfunc.h>
+#include <imgui.h>
 #include <memory>
 
 
-RenderWidget::RenderWidget(QWidget *parent): QOpenGLWidget(parent), tick_timer_(this)
+namespace smesh
 {
-    glclient_ = std::make_unique<glwrapper::GLClient>();
-    connect(&tick_timer_, &QTimer::timeout, this, [this](){update();});
-    tick_timer_.start(16);
-    smesh::Log::Init();
-    SMESH_INFO("application init!");
-}
-
-RenderWidget::~RenderWidget()
-{
-}
-
-void RenderWidget::initializeGL()
-{
-    if(glwrapper::GLLoad())
+    RenderWidget::RenderWidget(QWidget *parent) : QOpenGLWidget(parent), tick_timer_(this)
     {
-        glclient_->set_clear_color(1.0, 0.0, 0.0, 1.0);
+        connect(&tick_timer_, &QTimer::timeout, this, [this]()
+                { update(); });
+        tick_timer_.start(16);
+        smesh::Log::Init();
+        SMESH_INFO("application init!");
     }
-    QtImGui::initialize(this);
-}
 
-void RenderWidget::resizeGL(int w, int h)
-{
-
-}
-
-void RenderWidget::paintGL()
-{
-    QtImGui::newFrame();
+    RenderWidget::~RenderWidget()
     {
-        static float f = 0.0f;
-        ImGui::Text("Hello, world!");
-        ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
     }
-    glclient_->clear(GL_COLOR_BUFFER_BIT);
-    ImGui::Render();
-    QtImGui::render();
-}
+
+    void RenderWidget::LoadModelObject(QString path)
+    {
+        object_list_.push_back(std::make_unique<smesh::ModelObject>(path.toStdString(), path.toStdString()));
+    }
+
+    void RenderWidget::initializeGL()
+    {
+        if (!glwrapper::GLLoad())
+        {
+            SMESH_ERROR("OpenGL Init Failed!");
+            return;
+        }
+        SMESH_INFO("OpenGL Init Successed");
+        glwrapper::set_clear_color(0.3f, 0.3f, 0.3f, 1.0f);
+        renderer_ = std::make_unique<smesh::Renderer>(smesh::Size(width(), height()));
+        QtImGui::initialize(this);
+    }
+
+    void RenderWidget::resizeGL(int w, int h)
+    {
+        glViewport(0, 0, width(), height());
+    }
+
+    void RenderWidget::paintGL()
+    {
+        QtImGui::newFrame();
+        {
+            static float f = 0.0f;
+            ImGui::Text("Hello, world!");
+            ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
+        }
+        glwrapper::clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        for (auto &object : object_list_)
+        {
+            renderer_->draw(object.get());
+        }
+        ImGui::Render();
+        QtImGui::render();
+    }
+} // namespace smesh
