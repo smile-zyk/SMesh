@@ -16,9 +16,9 @@ namespace smesh
     {
         SMESH_TRACE("Render Init Begin");
         size_ = size;
-        object_shader_program_ = std::make_unique<glwrapper::ShaderProgram>("D:/Dev/SMesh/core/src/smesh/render/shader/phong_fragment.glsl",
-                                                                            "D:/Dev/SMesh/core/src/smesh/render/shader/phong_fragment.glsl");
-        camera_ = std::make_unique<Camera>(60, 0.1f, 50, static_cast<float>(size_.x) / size_.y);
+        object_shader_program_ = std::make_unique<glwrapper::ShaderProgram>("D:/DEV/SMesh/core/src/smesh/render/shader/phong_vertex.glsl",
+                                                                            "D:/DEV/SMesh/core/src/smesh/render/shader/phong_fragment.glsl");
+        camera_ = std::make_unique<Camera>(60, 1.f, 1000.f, static_cast<float>(size_.x) / size_.y);
     }
 
     void Renderer::draw(ModelObject *object)
@@ -46,7 +46,7 @@ namespace smesh
         object_shader_program_->use();
         object_shader_program_->set_uniform_value("model_matrix", object->transform());
         object_shader_program_->set_uniform_value("view_matrix", camera_->GetViewMatrix());
-        object_shader_program_->set_uniform_value("model_matrix", camera_->GetProjectionMatrix());
+        object_shader_program_->set_uniform_value("projection_matrix", camera_->GetProjectionMatrix());
         glwrapper::draw_elements(GL_TRIANGLES , GL_UNSIGNED_INT, vao);
     }
 } // namespace smesh

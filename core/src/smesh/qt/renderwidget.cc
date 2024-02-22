@@ -1,4 +1,5 @@
 // glad must include at first
+#include "smesh/render/camera.h"
 #include "smesh/render/renderer.h"
 #include "renderwidget.h"
 
@@ -40,6 +41,7 @@ namespace smesh
         }
         SMESH_INFO("OpenGL Init Successed");
         glwrapper::set_clear_color(0.3f, 0.3f, 0.3f, 1.0f);
+        glwrapper::enable(GL_DEPTH_TEST);
         renderer_ = std::make_unique<smesh::Renderer>(smesh::Size(width(), height()));
         QtImGui::initialize(this);
     }
@@ -47,6 +49,10 @@ namespace smesh
     void RenderWidget::resizeGL(int w, int h)
     {
         glViewport(0, 0, width(), height());
+        if(renderer_ != nullptr)
+        {
+            renderer_->camera()->set_aspect(static_cast<float>(w) / h);
+        }
     }
 
     void RenderWidget::paintGL()

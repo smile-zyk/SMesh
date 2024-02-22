@@ -24,6 +24,6 @@ namespace smesh
       private:
         std::string name_;
         std::shared_ptr<Mesh> mesh_;
-        glm::mat4 transform_;
+        glm::mat4 transform_{1.0};
     };
 } // namespace smesh

@@ -32,7 +32,7 @@ void ShaderProgram::link()
 	if (!success)
 	{
 		GLCall(glGetProgramInfoLog(id, 1024, NULL, infoLog));
-		gl_logger->error("shader program link error, %s", infoLog);
+		gl_logger->error("shader program link error, {}", infoLog);
 	}
 }
 
@@ -43,7 +43,7 @@ void ShaderProgram::use() const
 
 void ShaderProgram::attach_shader(std::shared_ptr<Shader> shader)
 {
-	GLCall(glAttachShader(id, shader->id));
+	GLCall(glAttachShader(id, shader->id)); 
 }
 
 void ShaderProgram::set_uniform_value(const std::string& name, bool value) const

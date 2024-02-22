@@ -21,7 +21,7 @@ Shader::Shader(GLenum type, const char* path)
 	}
 	catch (std::ifstream::failure e)
 	{
-		gl_logger->error("shader program file read fail, %s", e.what());
+		gl_logger->error("shader program file read fail, {}", e.what());
 	}
 	this->path = path;
 	const char* shaderCodeStr = vertexCode.c_str();
@@ -35,7 +35,7 @@ Shader::Shader(GLenum type, const char* path)
 	if (!success)
 	{
 		GLCall(glGetShaderInfoLog(id, 512, NULL, infoLog));
-		gl_logger->error("%s shader compile failed, %s", path, infoLog);
+		gl_logger->error("{} shader compile failed, {}", path, infoLog);
 	}
 }
 
