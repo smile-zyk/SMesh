@@ -13,7 +13,7 @@ void main()
 
     vec3 ambient = vec3(0.4f, 0.4f, 0.4f);
 
-    vec3 light_position = vec3(10.0f, 30.0f, 80.0f);
+    vec3 light_position = vec3(0.0f, 100.0f, 0.0f);
     vec3 light_diffuse_color = vec3(0.5f, 0.5f, 0.5f);
     vec3 light_specular_color = vec3(0.6f, 0.6f, 0.6f);
 

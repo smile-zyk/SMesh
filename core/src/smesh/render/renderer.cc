@@ -7,7 +7,6 @@
 #include "smesh/render/renderer.h"
 #include "vertex_array.h"
 #include <OpenMesh/Core/System/config.h>
-#include <glm/fwd.hpp>
 #include <memory>
 
 namespace smesh

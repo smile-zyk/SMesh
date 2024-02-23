@@ -21,7 +21,7 @@ namespace smesh
         float znear_;
         float zfar_;
         float aspect_;
-        glm::vec3 eye_ = {30.0f, 40.0f, 80.0f};
+        glm::vec3 eye_ = {0.0f, 0.0f, 100.0f};
         glm::vec3 target_ = {0.0f, 0.0f, 0.0f};
         glm::vec3 up_ = {0.0f, 1.0f, 0.0f};
     };
