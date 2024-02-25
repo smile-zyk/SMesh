@@ -1,14 +1,11 @@
 // glad must include at first
-#include "smesh/render/renderer.h"
 #include "renderwidget.h"
 #include "smesh/log/log.h"
 
 #include <QPoint>
 #include <QtImGui.h>
-#include <glfunc.h>
 #include <imgui.h>
 
-#include <chrono>
 #include <memory>
 #include <qnamespace.h>
 #include <qpoint.h>
@@ -30,30 +27,12 @@ namespace smesh
 
     void RenderWidget::LoadModelObject(QString path)
     {
-        object_list_.push_back(std::make_unique<smesh::ModelObject>(path.toStdString(), path.toStdString()));
+        renderer_->AddModelObject(std::make_unique<smesh::ModelObject>(path.toStdString(), path.toStdString()));
     }
-
-    void RenderWidget::UpdateTime()
-    {
-        static std::chrono::steady_clock::time_point last_frame_time;
-        auto current_frame_time = std::chrono::steady_clock::now();
-        current_frame_time_ = current_frame_time - last_frame_time;
-        last_frame_time = current_frame_time;
-    }
-
-    void RenderWidget::DrawScene()
-    {
-        glwrapper::clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        for (auto &object : object_list_)
-        {
-            renderer_->draw(object.get());
-        }
-    }
-
+    
     void RenderWidget::Tick()
     {
-        // update detla time
-        UpdateTime();
+        renderer_->Update();
         // call paintGL
         update();
     }
@@ -66,26 +45,20 @@ namespace smesh
             return;
         }
         SMESH_INFO("OpenGL Init Successed");
-        glwrapper::set_clear_color(0.3f, 0.3f, 0.3f, 1.0f);
-        glwrapper::enable(GL_DEPTH_TEST);
-        renderer_ = std::make_unique<smesh::Renderer>(smesh::Size(width(), height()));
+        renderer_ = std::make_unique<smesh::Renderer>();
+        renderer_->Init();
         QtImGui::initialize(this);
     }
 
     void RenderWidget::resizeGL(int w, int h)
     {
-        glViewport(0, 0, width(), height());
-        if (renderer_ != nullptr)
-        {
-            renderer_->camera()->set_aspect(static_cast<float>(w) / h);
-        }
+        renderer_->Resize(w, h);
     }
 
     void RenderWidget::paintGL()
     {
         QtImGui::newFrame();
-        DrawScene();
-        DrawImgui();
+        renderer_->Draw();
         ImGui::Render();
         QtImGui::render();
     }
@@ -155,13 +128,4 @@ namespace smesh
             renderer_->camera()->Approach(detla.y());
         }
     }
-
-    void RenderWidget::DrawImgui()
-    {
-        auto current_fps = std::chrono::seconds{1} / current_frame_time_;
-        ImGui::Begin("Debug");
-        ImGui::Text("FPS: %lld", current_fps);
-        ImGui::End();
-    }
-
 } // namespace smesh

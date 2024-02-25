@@ -1,8 +1,7 @@
 #pragma once
-
+#include "smesh/render/renderer.h"
 #include "smesh/core.h"
 
-#include <chrono>
 #include <memory>
 
 #include <QMouseEvent>
@@ -12,8 +11,6 @@
 
 namespace smesh
 {
-    class Renderer;
-    class ModelObject;
     class SMESH_API RenderWidget : public QOpenGLWidget
     {
         Q_OBJECT
@@ -34,11 +31,6 @@ namespace smesh
         void mouseMoveEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
         void wheelEvent(QWheelEvent *event) Q_DECL_OVERRIDE;
 
-        virtual void UpdateTime();
-
-        virtual void DrawImgui();
-        virtual void DrawScene();
-
       private:
         enum InteractionState
         {
@@ -50,8 +42,6 @@ namespace smesh
         typedef int InteractionStates;
         InteractionStates interaction_state_ = InteractionState::kNormal;
         QTimer tick_timer_;
-        std::vector<std::unique_ptr<smesh::ModelObject>> object_list_;
         std::unique_ptr<smesh::Renderer> renderer_;
-        std::chrono::steady_clock::duration current_frame_time_;
     };
 } // namespace smesh

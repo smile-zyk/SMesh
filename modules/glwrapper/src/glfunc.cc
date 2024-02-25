@@ -1,4 +1,5 @@
 #include "glfunc.h"
+#include "glcommon.h"
 
 namespace glwrapper
 {
@@ -7,10 +8,20 @@ namespace glwrapper
     {
         GLCall(glClearColor(red, green, blue, alpha));
     }
+    
+    void set_viewport(GLint x, GLint y ,GLsizei width, GLsizei height)
+    {
+        GLCall(glViewport(x, y, width, height));
+    }
 
     void clear(GLbitfield mask)
     {
         GLCall(glClear(mask));
+    }
+
+    void disable(GLenum cap)
+    {
+        GLCall(glDisable(cap));
     }
 
     void enable(GLenum cap)
@@ -41,6 +52,11 @@ namespace glwrapper
             break;
         }
         GLCall(glDrawElements(mode, count, type, 0));
+    }
+    
+    void set_polygon_offset(GLfloat factor, GLfloat units)
+    {
+        GLCall(glPolygonOffset(factor, units));
     }
 
     void set_polygon_mode(GLenum face, GLenum mode)

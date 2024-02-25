@@ -1,7 +1,6 @@
 #pragma once
 #include "smesh/core.h"
 #include "smesh/mesh/mesh.h"
-#include <QObject>
 #include <glm/mat4x4.hpp>
 #include <memory>
 #include <string>
@@ -9,9 +8,8 @@
 
 namespace smesh
 {
-    class SMESH_API ModelObject : public QObject
+    class SMESH_API ModelObject
     {
-        Q_OBJECT
       public:
         ModelObject(const std::string &name, const std::string &path);
         ModelObject(const std::string &path);

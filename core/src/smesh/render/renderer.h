@@ -1,29 +1,47 @@
 #pragma once
+#include <chrono>
 #include <memory>
 #include <vector>
+#include <map>
 
 #include "shader_program.h"
 #include "smesh/core.h"
-#include "smesh/qt/modelobject.h"
-
 #include "camera.h"
-#include "smesh/render/camera.h"
+#include "modelobject.h"
 
 namespace smesh
 {
-    typedef glm::vec<2, int> Size;
-
     class SMESH_API Renderer
     {
       public:
-        Renderer(const Size &size);
+        Renderer();
         ~Renderer() {}
-        void draw(ModelObject *object);
+        void AddModelObject(std::unique_ptr<ModelObject> object);
+        void Init();
+        void Update();
+        void Draw();
+        void Resize(int w, int h);
         Camera *camera() { return camera_.get(); }
-
       private:
+        void UpdateTime();
+        void DrawScene();
+        void DrawObject(ModelObject *object);
+        void DrawImgui();
+      private:
+        enum State
+        {
+          // 物体模式
+          kObject = 0,
+          // 编辑模式
+          kEdit = 1<<0,
+        };
+        typedef int States;
+        States state_ = State::kObject;
         std::unique_ptr<Camera> camera_;
-        std::unique_ptr<glwrapper::ShaderProgram> object_shader_program_;
-        Size size_;
+        std::map<std::string, std::unique_ptr<glwrapper::ShaderProgram>> shader_pragram_map_;
+        std::vector<std::unique_ptr<ModelObject>> object_list_;
+        std::chrono::steady_clock::duration current_frame_time_;
+        int width_ {};
+        int height_{};
     };
 } // namespace smesh

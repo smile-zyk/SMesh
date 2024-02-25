@@ -2,8 +2,7 @@
 
 namespace smesh
 {
-    Camera::Camera(float _fov, float _zNear, float _zFar, float _aspect)
-        : fov_(_fov), znear_(_zNear), zfar_(_zFar), aspect_(_aspect)
+    Camera::Camera()
     {
     }
 
