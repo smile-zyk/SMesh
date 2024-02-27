@@ -15,12 +15,17 @@ namespace smesh
     Renderer::Renderer()
     {
         SMESH_TRACE("Render Init Begin");
+        auto edit_mode_shader_program = std::make_unique<glwrapper::ShaderProgram>("D:/DEV/SMesh/core/src/smesh/render/shader/wireframe_vertex.glsl",
+                                                                                   "D:/DEV/SMesh/core/src/smesh/render/shader/wireframe_fragment.glsl",
+                                                                                   "D:/DEV/SMesh/core/src/smesh/render/shader/wireframe_geometry.glsl");
+
         auto object_mode_shader_program = std::make_unique<glwrapper::ShaderProgram>("D:/DEV/SMesh/core/src/smesh/render/shader/phong_vertex.glsl",
-                                                                            "D:/DEV/SMesh/core/src/smesh/render/shader/phong_fragment.glsl");
-        shader_pragram_map_.insert({"object_mode_shader", std::move(object_mode_shader_program)});
+                                                                                     "D:/DEV/SMesh/core/src/smesh/render/shader/phong_fragment.glsl");
+        shader_program_map_.insert({"object_mode_shader", std::move(object_mode_shader_program)});
+        shader_program_map_.insert({"edit_mode_shader", std::move(edit_mode_shader_program)});
         camera_ = std::make_unique<Camera>();
     }
-    
+
     void Renderer::AddModelObject(std::unique_ptr<ModelObject> object)
     {
         object_list_.push_back(std::move(object));
@@ -30,6 +35,8 @@ namespace smesh
     {
         glwrapper::set_clear_color(0.3f, 0.3f, 0.3f, 1.0f);
         glwrapper::enable(GL_DEPTH_TEST);
+        glwrapper::enable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }
 
     void Renderer::Update()
@@ -53,11 +60,11 @@ namespace smesh
         // draw imgui
         DrawImgui();
     }
-    
+
     void Renderer::Resize(int w, int h)
     {
         glwrapper::set_viewport(0, 0, w, h);
-        camera_->set_aspect(static_cast<float>(w)/ h);
+        camera_->set_aspect(static_cast<float>(w) / h);
         width_ = w;
         height_ = h;
     }
@@ -75,6 +82,7 @@ namespace smesh
     {
         // TODO: create axis and grid
     }
+    static float line_width = 1.5;
 
     void Renderer::DrawImgui()
     {
@@ -82,14 +90,17 @@ namespace smesh
         ImGui::Begin("Debug");
         ImGui::Text("FPS: %lld", current_fps);
         ImGui::RadioButton("Object Mode", &state_, State::kObject);
-        ImGui::RadioButton("Edit Mode", &state_, State::kEdit);;
+        ImGui::RadioButton("Edit Mode", &state_, State::kEdit);
+        if(state_ == State::kEdit)
+        {
+            ImGui::SliderFloat("LineWidth", &line_width, 0, 5);
+        }
         ImGui::End();
     }
 
     void Renderer::DrawObject(ModelObject *object)
     {
         // TODO: use https://www.khronos.org/assets/uploads/developers/library/2014-gdc/Khronos-OpenGL-Efficiency-GDC-Mar14.pdf
-        glwrapper::set_polygon_mode(GL_FRONT, GL_FILL);
         glwrapper::VertexArray vao;
         glwrapper::Buffer vbo;
         glwrapper::Buffer ebo;
@@ -110,21 +121,25 @@ namespace smesh
         vao.enable_attrib(2);
         vao.bind_element_buffer(ebo);
         vao.bind();
-        shader_pragram_map_.at("object_mode_shader")->use();
-        shader_pragram_map_.at("object_mode_shader")->set_uniform_value("model_matrix", object->transform());
-        shader_pragram_map_.at("object_mode_shader")->set_uniform_value("view_matrix", camera_->GetViewMatrix());
-        shader_pragram_map_.at("object_mode_shader")->set_uniform_value("projection_matrix", camera_->GetProjectionMatrix());
-        shader_pragram_map_.at("object_mode_shader")->set_uniform_value("view_position", camera_->eye());
-        shader_pragram_map_.at("object_mode_shader")->set_uniform_value("is_line", 0);
-        glwrapper::draw_elements(GL_TRIANGLES, GL_UNSIGNED_INT, vao);
-        if(state_ == State::kEdit)
+        if (state_ == State::kEdit)
         {
-            glwrapper::set_polygon_mode(GL_FRONT, GL_LINE);
-            glwrapper::enable(GL_POLYGON_OFFSET_LINE);
-            glwrapper::set_polygon_offset(-1.0f, -1.0f);
-            shader_pragram_map_.at("object_mode_shader")->set_uniform_value("is_line", 1);
-            glwrapper::draw_elements(GL_TRIANGLES, GL_UNSIGNED_INT, vao);
-            glwrapper::disable(GL_POLYGON_OFFSET_LINE);
+            shader_program_map_.at("edit_mode_shader")->use();
+            shader_program_map_.at("edit_mode_shader")->set_uniform_value("model_matrix", object->transform());
+            shader_program_map_.at("edit_mode_shader")->set_uniform_value("view_matrix", camera_->GetViewMatrix());
+            shader_program_map_.at("edit_mode_shader")->set_uniform_value("projection_matrix", camera_->GetProjectionMatrix());
+            shader_program_map_.at("edit_mode_shader")->set_uniform_value("view_position", camera_->eye());
+            shader_program_map_.at("edit_mode_shader")->set_uniform_value("viewport_x", width_);
+            shader_program_map_.at("edit_mode_shader")->set_uniform_value("viewport_y", height_);
+            shader_program_map_.at("edit_mode_shader")->set_uniform_value("line_width", line_width);
         }
+        else if (state_ == State::kObject)
+        {
+            shader_program_map_.at("object_mode_shader")->use();
+            shader_program_map_.at("object_mode_shader")->set_uniform_value("model_matrix", object->transform());
+            shader_program_map_.at("object_mode_shader")->set_uniform_value("view_matrix", camera_->GetViewMatrix());
+            shader_program_map_.at("object_mode_shader")->set_uniform_value("projection_matrix", camera_->GetProjectionMatrix());
+            shader_program_map_.at("object_mode_shader")->set_uniform_value("view_position", camera_->eye());
+        }
+        glwrapper::draw_elements(GL_TRIANGLES, GL_UNSIGNED_INT, vao);
     }
 } // namespace smesh

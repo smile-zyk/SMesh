@@ -13,6 +13,7 @@ namespace glwrapper
 	void draw_arrays(GLenum mode, const VertexArray& vao);
 	void draw_elements(GLenum mode, GLenum type, const VertexArray& vao);
 
+	void set_blend_func(GLenum sfactor, GLenum dfactor);
 	void set_polygon_offset(GLfloat factor, GLfloat units);
 	void set_polygon_mode(GLenum face, GLenum mode);
 }

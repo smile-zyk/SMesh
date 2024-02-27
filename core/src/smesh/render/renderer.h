@@ -30,15 +30,15 @@ namespace smesh
       private:
         enum State
         {
-          // 物体模式
+          // Object Mode
           kObject = 0,
-          // 编辑模式
+          // Edit Mode
           kEdit = 1<<0,
         };
         typedef int States;
         States state_ = State::kObject;
         std::unique_ptr<Camera> camera_;
-        std::map<std::string, std::unique_ptr<glwrapper::ShaderProgram>> shader_pragram_map_;
+        std::map<std::string, std::unique_ptr<glwrapper::ShaderProgram>> shader_program_map_;
         std::vector<std::unique_ptr<ModelObject>> object_list_;
         std::chrono::steady_clock::duration current_frame_time_;
         int width_ {};

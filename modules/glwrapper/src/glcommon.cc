@@ -27,7 +27,7 @@ bool glwrapper::GLLogCall(const char* function, const char* file, int line)
 	
 	while (GLenum error = glGetError())
 	{
-		gl_logger->error("error code %ud in func %s, file %s, line %d", error, function, file, line);
+		gl_logger->error("error code {} in func {}, file {}, line {}", error, function, file, line);
 		return false;
 	}
 	return true;

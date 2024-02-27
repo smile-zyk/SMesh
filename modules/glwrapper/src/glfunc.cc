@@ -54,6 +54,11 @@ namespace glwrapper
         GLCall(glDrawElements(mode, count, type, 0));
     }
     
+    void set_blend_func(GLenum sfactor, GLenum dfactor)
+    {
+        GLCall(glBlendFunc(sfactor, dfactor));
+    }
+    
     void set_polygon_offset(GLfloat factor, GLfloat units)
     {
         GLCall(glPolygonOffset(factor, units));
