@@ -24,6 +24,7 @@ namespace smesh
         shader_program_map_.insert({"object_mode_shader", std::move(object_mode_shader_program)});
         shader_program_map_.insert({"edit_mode_shader", std::move(edit_mode_shader_program)});
         camera_ = std::make_unique<Camera>();
+        SMESH_TRACE("Render Init End");
     }
 
     void Renderer::AddModelObject(std::unique_ptr<ModelObject> object)
@@ -72,8 +73,8 @@ namespace smesh
     void Renderer::UpdateTime()
     {
         // SMESH_TRACE("State is: {}", (state_ == State::kObject)?"Object" : "Edit");
-        static std::chrono::steady_clock::time_point last_frame_time;
-        auto current_frame_time = std::chrono::steady_clock::now();
+        static std::chrono::high_resolution_clock::time_point last_frame_time = std::chrono::high_resolution_clock::now();
+        auto current_frame_time = std::chrono::high_resolution_clock::now();
         current_frame_time_ = current_frame_time - last_frame_time;
         last_frame_time = current_frame_time;
     }
@@ -86,7 +87,14 @@ namespace smesh
 
     void Renderer::DrawImgui()
     {
-        auto current_fps = std::chrono::seconds{1} / current_frame_time_;
+        static long long current_fps = 0;
+        // Must check whether current_frame_time is 0
+        // Otherwise the program in Release mode maybe fail the first time it starts
+        // update: This problem is resolved by changing steady_clock to high_resolution_clock, but it is recommended to determine whether current_frame_time_ is 0, so leave the if
+        if(current_frame_time_.count() != 0)
+        {
+            current_fps = std::chrono::seconds{1} / current_frame_time_;
+        }
         ImGui::Begin("Debug");
         ImGui::Text("FPS: %lld", current_fps);
         ImGui::RadioButton("Object Mode", &state_, State::kObject);

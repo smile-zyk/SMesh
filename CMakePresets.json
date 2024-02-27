@@ -6,7 +6,7 @@
             "hidden": true,
             "generator": "Ninja Multi-Config",
             "cacheVariables": {
-                "CMAKE_CONFIGURATION_TYPES": "Debug;Release",
+                "CMAKE_CONFIGURATION_TYPES": "Debug;Release;RelWithDebInfo",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": true,
                 "CMAKE_TOOLCHAIN_FILE": {
                     "value": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
@@ -59,6 +59,11 @@
             "configuration": "Release"
         },
         {
+            "name": "x64-Windows-Build-RelWithDebInfo",
+            "configurePreset": "x64-Windows-Config",
+            "configuration": "RelWithDebInfo"
+        },
+        {
             "name": "x86-Windows-Build-Debug",
             "configurePreset": "x86-Windows-Config",
             "configuration": "Debug"
@@ -67,6 +72,11 @@
             "name": "x86-Windows-Build-Release",
             "configurePreset": "x86-Windows-Config",
             "configuration": "Release"
+        },
+        {
+            "name": "x86-Windows-Build-RelWithDebInfo",
+            "configurePreset": "x86-Windows-Config",
+            "configuration": "RelWithDebInfo"
         }
     ]
 }
