@@ -6,6 +6,7 @@
 #include "smesh/render/camera.h"
 #include "vertex_array.h"
 #include <QtImGui.h>
+#include <glm/fwd.hpp>
 #include <imgui.h>
 #include <memory>
 #include <utility>
@@ -21,8 +22,12 @@ namespace smesh
 
         auto object_mode_shader_program = std::make_unique<glwrapper::ShaderProgram>("D:/DEV/SMesh/core/src/smesh/render/shader/phong_vertex.glsl",
                                                                                      "D:/DEV/SMesh/core/src/smesh/render/shader/phong_fragment.glsl");
+        
+        auto grid_shader_program = std::make_unique<glwrapper::ShaderProgram>("D:/DEV/SMesh/core/src/smesh/render/shader/grid_vertex.glsl",
+                                                                                     "D:/DEV/SMesh/core/src/smesh/render/shader/grid_fragment.glsl");
         shader_program_map_.insert({"object_mode_shader", std::move(object_mode_shader_program)});
         shader_program_map_.insert({"edit_mode_shader", std::move(edit_mode_shader_program)});
+        shader_program_map_.insert({"grid_shader", std::move(grid_shader_program)});
         camera_ = std::make_unique<Camera>();
         SMESH_TRACE("Render Init End");
     }
@@ -82,7 +87,38 @@ namespace smesh
     void Renderer::DrawScene()
     {
         // TODO: create axis and grid
+        float far = camera_->zfar();
+        glm::vec3 camera_pos = camera_->eye();
+        glm::vec3 grid_vertices[4] =
+        {
+            glm::vec3(camera_pos.x - 2 * far, camera_pos.y + 2 * far, 0.f),
+            glm::vec3(camera_pos.x - 2 * far, camera_pos.y - 2 * far, 0.f),
+            glm::vec3(camera_pos.x + 2 * far, camera_pos.y - 2 * far, 0.f),
+            glm::vec3(camera_pos.x + 2 * far, camera_pos.y + 2 * far, 0.f)
+        };
+        unsigned int grid_indices[6] = 
+        {
+            0, 1, 2,
+            2, 3, 0
+        };
+        glwrapper::VertexArray vao;
+        glwrapper::Buffer vbo;
+        glwrapper::Buffer ebo;
+        vbo.allocate_storage(sizeof(grid_vertices), grid_vertices, GL_DYNAMIC_STORAGE_BIT);
+        ebo.allocate_storage(sizeof(grid_indices), grid_indices, GL_DYNAMIC_STORAGE_BIT);
+        vao.bind_vertex_buffer(0, vbo, 0, sizeof(glm::vec3));
+        vao.set_attrib(0, 3, GL_FLOAT, false, 0);
+        vao.bind_attrib(0, 0);
+        vao.enable_attrib(0);
+        vao.bind_element_buffer(ebo);
+        vao.bind();
+        shader_program_map_.at("grid_shader")->use();
+        shader_program_map_.at("grid_shader")->set_uniform_value("view_matrix", camera_->GetViewMatrix());
+        shader_program_map_.at("grid_shader")->set_uniform_value("projection_matrix", camera_->GetProjectionMatrix());
+        shader_program_map_.at("grid_shader")->set_uniform_value("view_position", camera_->eye());
+        glwrapper::draw_elements(GL_TRIANGLES, GL_UNSIGNED_INT, vao);
     }
+
     static float line_width = 1.5;
 
     void Renderer::DrawImgui()
@@ -91,7 +127,7 @@ namespace smesh
         // Must check whether current_frame_time is 0
         // Otherwise the program in Release mode maybe fail the first time it starts
         // update: This problem is resolved by changing steady_clock to high_resolution_clock, but it is recommended to determine whether current_frame_time_ is 0, so leave the if
-        if(current_frame_time_.count() != 0)
+        if (current_frame_time_.count() != 0)
         {
             current_fps = std::chrono::seconds{1} / current_frame_time_;
         }
@@ -99,7 +135,7 @@ namespace smesh
         ImGui::Text("FPS: %lld", current_fps);
         ImGui::RadioButton("Object Mode", &state_, State::kObject);
         ImGui::RadioButton("Edit Mode", &state_, State::kEdit);
-        if(state_ == State::kEdit)
+        if (state_ == State::kEdit)
         {
             ImGui::SliderFloat("LineWidth", &line_width, 0, 5);
         }

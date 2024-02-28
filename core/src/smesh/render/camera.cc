@@ -10,8 +10,8 @@ namespace smesh
     {
         glm::vec3 centerVec = eye_ - target_;
         float radius = glm::length(centerVec);
-        float yaw = std::atan2(centerVec.x, centerVec.z);
-        float pitch = std::asin(centerVec.y / radius);
+        float yaw = std::atan2(centerVec.y, centerVec.x);
+        float pitch = std::asin(centerVec.z / radius);
         float factor = static_cast<float>(M_PI) * 2.f;
         glm::vec3 offset;
         yaw -= motion.x * factor;
@@ -22,9 +22,9 @@ namespace smesh
         if (pitch - M_PI_2 > DBL_EPSILON)
             pitch = glm::radians(89.9f);
 
-        offset.x = (radius * (float)std::cos(pitch) * (float)std::sin(yaw));
-        offset.y = (radius * (float)std::sin(pitch));
-        offset.z = (radius * (float)std::cos(pitch) * (float)std::cos(yaw));
+        offset.y = (radius * (float)std::cos(pitch) * (float)std::sin(yaw));
+        offset.z = (radius * (float)std::sin(pitch));
+        offset.x = (radius * (float)std::cos(pitch) * (float)std::cos(yaw));
 
         eye_ = target_ + offset;
     }
@@ -33,7 +33,7 @@ namespace smesh
     {
         glm::vec3 positionVec = target_ - eye_;
         glm::vec3 forward = glm::normalize(positionVec);
-        glm::vec3 left = glm::normalize(glm::cross({0.0f, 1.0f, 0.0f}, forward));
+        glm::vec3 left = glm::normalize(glm::cross(up_, forward));
         glm::vec3 up = glm::normalize(glm::cross(forward, left));
 
         float distance = glm::length(positionVec);
