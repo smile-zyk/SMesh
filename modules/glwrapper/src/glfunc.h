@@ -1,5 +1,6 @@
 #pragma once
 #include "glcommon.h"
+#include "glfunc.h"
 #include "vertex_array.h"
 
 namespace glwrapper
@@ -10,6 +11,7 @@ namespace glwrapper
 	void enable(GLenum cap);
 	void disable(GLenum cap);
 
+	void draw_arrays(GLenum mode, GLint count);
 	void draw_arrays(GLenum mode, const VertexArray& vao);
 	void draw_elements(GLenum mode, GLenum type, const VertexArray& vao);
 
