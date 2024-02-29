@@ -39,7 +39,7 @@ namespace smesh
 
     void Renderer::Init()
     {
-        glwrapper::set_clear_color(0.3f, 0.3f, 0.3f, 1.0f);
+        glwrapper::set_clear_color(0.2f, 0.2f, 0.2f, 1.0f);
         glwrapper::enable(GL_DEPTH_TEST);
         glwrapper::enable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -87,36 +87,11 @@ namespace smesh
     void Renderer::DrawScene()
     {
         // TODO: create axis and grid
-        float far = camera_->zfar();
-        glm::vec3 camera_pos = camera_->eye();
-        glm::vec3 grid_vertices[4] =
-        {
-            glm::vec3(camera_pos.x - 2 * far, camera_pos.y + 2 * far, 0.f),
-            glm::vec3(camera_pos.x - 2 * far, camera_pos.y - 2 * far, 0.f),
-            glm::vec3(camera_pos.x + 2 * far, camera_pos.y - 2 * far, 0.f),
-            glm::vec3(camera_pos.x + 2 * far, camera_pos.y + 2 * far, 0.f)
-        };
-        unsigned int grid_indices[6] = 
-        {
-            0, 1, 2,
-            2, 3, 0
-        };
-        glwrapper::VertexArray vao;
-        glwrapper::Buffer vbo;
-        glwrapper::Buffer ebo;
-        vbo.allocate_storage(sizeof(grid_vertices), grid_vertices, GL_DYNAMIC_STORAGE_BIT);
-        ebo.allocate_storage(sizeof(grid_indices), grid_indices, GL_DYNAMIC_STORAGE_BIT);
-        vao.bind_vertex_buffer(0, vbo, 0, sizeof(glm::vec3));
-        vao.set_attrib(0, 3, GL_FLOAT, false, 0);
-        vao.bind_attrib(0, 0);
-        vao.enable_attrib(0);
-        vao.bind_element_buffer(ebo);
-        vao.bind();
         shader_program_map_.at("grid_shader")->use();
         shader_program_map_.at("grid_shader")->set_uniform_value("view_matrix", camera_->GetViewMatrix());
         shader_program_map_.at("grid_shader")->set_uniform_value("projection_matrix", camera_->GetProjectionMatrix());
         shader_program_map_.at("grid_shader")->set_uniform_value("view_position", camera_->eye());
-        glwrapper::draw_elements(GL_TRIANGLES, GL_UNSIGNED_INT, vao);
+        glwrapper::draw_arrays(GL_TRIANGLES, 6);
     }
 
     static float line_width = 1.5;

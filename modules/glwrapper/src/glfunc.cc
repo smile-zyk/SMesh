@@ -23,6 +23,11 @@ namespace glwrapper
     {
         GLCall(glDisable(cap));
     }
+    
+    void draw_arrays(GLenum mode, GLint count)
+    {
+        GLCall(glDrawArrays(mode, 0, count));
+    }
 
     void enable(GLenum cap)
     {

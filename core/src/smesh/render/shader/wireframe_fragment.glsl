@@ -19,7 +19,7 @@ void main()
 
     vec3 light_position = view_position;
     vec3 light_diffuse_color = vec3(0.5f, 0.5f, 0.5f);
-    vec3 light_specular_color = vec3(0.6f, 0.6f, 0.6f);
+    vec3 light_specular_color = vec3(0.2f, 0.2f, 0.2f);
 
     vec3 normal = normalize(frag_normal);
     vec3 light_direction = normalize(light_position - frag_position);
