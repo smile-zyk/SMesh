@@ -9,22 +9,7 @@ uniform mat4 view_matrix;
 uniform mat4 projection_matrix;
 uniform vec3 view_position;
 
-vec4 GetGridColor(vec3 frag_pos, float scale) {
-    vec2 coord = frag_pos.xy * scale; // use the scale variable to set the distance between the lines
-    vec2 derivative = fwidth(coord);
-    vec2 grid = abs(fract(coord - 0.5) - 0.5) / derivative;
-    float line = min(grid.x, grid.y);
-    float minimumy = min(derivative.y, 1);
-    float minimumx = min(derivative.x, 1);
-    vec4 color = vec4(0.3, 0.3, 0.3, 1.0 - min(line, 1.0));
-    // x axis
-    if(frag_pos.x > - minimumx / scale && frag_pos.x < minimumx / scale)
-        color.x = 1.0;
-    // y axis
-    if(frag_pos.y > -minimumy / scale && frag_pos.y < minimumy / scale)
-        color.y = 1.0;
-    return color;
-}
+float max_fade_depth = abs((view_matrix * vec4(far_point, 1.0)).z);
 
 float ComputeDepth(vec3 pos)
 {
@@ -33,12 +18,25 @@ float ComputeDepth(vec3 pos)
     return ndc_z * 0.5 + 0.5;
 }
 
-float ComputeFade(vec3 pos)
+float ComputeFade(vec3 pos, float depth)
 {
-    vec4 near_view_pos = view_matrix * vec4(near_point, 1.0);
-    vec4 far_view_pos = view_matrix * vec4(far_point, 1.0);
-    vec4 cur_view_pos = view_matrix * vec4(pos, 1.0);
-    return length(cur_view_pos.xyz - view_position) / abs(far_view_pos.z) ; 
+    depth = min(depth, max_fade_depth);
+    vec3 eye2pos = pos - view_position; 
+    float fade = length(eye2pos) / depth;
+    return fade;
+}
+
+void SetGridColor(vec3 frag_pos, float scale) 
+{
+    vec2 coord = frag_pos.xy / scale; // use the scale variable to set the distance between the lines
+    vec2 derivative = fwidth(coord);
+    vec2 grid = abs(fract(coord - 0.5) - 0.5) / derivative;
+    float line = min(grid.x, grid.y);
+    float minimumy = min(derivative.y, 1);
+    float minimumx = min(derivative.x, 1);
+    vec4 color = vec4(0.3, 0.3, 0.3, 1.0 - min(line, 1.0)); 
+    color.a *= clamp(1 - ComputeFade(frag_pos, scale * 100), 0, 1);
+    if(color.a != 0) frag_color = color;
 }
 
 void main()
@@ -48,9 +46,12 @@ void main()
     if(t > 0)
     {
         gl_FragDepth = ComputeDepth(frag_pos);
-        float fading = clamp(1 - ComputeFade(frag_pos), 0, 1);
-        frag_color = GetGridColor(frag_pos, 0.1);
-        frag_color.a *= fading;
+        // float fading = clamp(1 - ComputeFade(frag_pos), 0, 1);
+        SetGridColor(frag_pos, 0.1);
+        SetGridColor(frag_pos, 1);
+        SetGridColor(frag_pos, 10);
+        SetGridColor(frag_pos, 100);
+        // frag_color.a *= fading;
         if(frag_color.a == 0) discard;
     }
     else

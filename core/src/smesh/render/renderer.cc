@@ -56,13 +56,14 @@ namespace smesh
     {
         // clear
         glwrapper::clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        // draw scene like axis, gird ...
-        DrawScene();
         // draw each object
         for (auto &object : object_list_)
         {
             DrawObject(object.get());
         }
+        // draw scene like axis, gird ...
+        // cause scene has opacity object, so we should draw it last;
+        DrawScene();
         // draw imgui
         DrawImgui();
     }
