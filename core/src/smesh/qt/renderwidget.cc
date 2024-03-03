@@ -3,6 +3,7 @@
 #include "smesh/log/log.h"
 
 #include <QPoint>
+#include <QSurfaceFormat>
 #include <QtImGui.h>
 #include <imgui.h>
 
@@ -14,6 +15,10 @@ namespace smesh
 {
     RenderWidget::RenderWidget(QWidget *parent) : QOpenGLWidget(parent), tick_timer_(this)
     {
+        QSurfaceFormat format;
+        format.setSamples(4);
+        setFormat(format);
+
         connect(&tick_timer_, &QTimer::timeout, this, [this]()
                 { Tick(); });
         tick_timer_.start(16);
