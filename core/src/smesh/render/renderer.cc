@@ -16,17 +16,14 @@ namespace smesh
     Renderer::Renderer()
     {
         SMESH_TRACE("Render Init Begin");
-        auto edit_mode_shader_program = std::make_unique<glwrapper::ShaderProgram>("D:/DEV/SMesh/core/src/smesh/render/shader/wireframe_vertex.glsl",
-                                                                                   "D:/DEV/SMesh/core/src/smesh/render/shader/wireframe_fragment.glsl",
-                                                                                   "D:/DEV/SMesh/core/src/smesh/render/shader/wireframe_geometry.glsl");
+        auto object_shader_program = std::make_unique<glwrapper::ShaderProgram>("D:/DEV/SMesh/core/src/smesh/render/shader/object_vertex.glsl",
+                                                                                   "D:/DEV/SMesh/core/src/smesh/render/shader/object_fragment.glsl",
+                                                                                   "D:/DEV/SMesh/core/src/smesh/render/shader/object_geometry.glsl");
 
-        auto object_mode_shader_program = std::make_unique<glwrapper::ShaderProgram>("D:/DEV/SMesh/core/src/smesh/render/shader/phong_vertex.glsl",
-                                                                                     "D:/DEV/SMesh/core/src/smesh/render/shader/phong_fragment.glsl");
-        
         auto grid_shader_program = std::make_unique<glwrapper::ShaderProgram>("D:/DEV/SMesh/core/src/smesh/render/shader/grid_vertex.glsl",
-                                                                                     "D:/DEV/SMesh/core/src/smesh/render/shader/grid_fragment.glsl");
-        shader_program_map_.insert({"object_mode_shader", std::move(object_mode_shader_program)});
-        shader_program_map_.insert({"edit_mode_shader", std::move(edit_mode_shader_program)});
+                                                                              "D:/DEV/SMesh/core/src/smesh/render/shader/grid_fragment.glsl");
+
+        shader_program_map_.insert({"object_shader", std::move(object_shader_program)});
         shader_program_map_.insert({"grid_shader", std::move(grid_shader_program)});
         camera_ = std::make_unique<Camera>();
         SMESH_TRACE("Render Init End");
@@ -88,10 +85,11 @@ namespace smesh
     void Renderer::DrawScene()
     {
         // TODO: create axis and grid
-        shader_program_map_.at("grid_shader")->use();
-        shader_program_map_.at("grid_shader")->set_uniform_value("view_matrix", camera_->GetViewMatrix());
-        shader_program_map_.at("grid_shader")->set_uniform_value("projection_matrix", camera_->GetProjectionMatrix());
-        shader_program_map_.at("grid_shader")->set_uniform_value("view_position", camera_->eye());
+        auto& grid_shader = shader_program_map_.at("grid_shader");
+        grid_shader->use();
+        grid_shader->set_uniform_value("view_matrix", camera_->GetViewMatrix());
+        grid_shader->set_uniform_value("projection_matrix", camera_->GetProjectionMatrix());
+        grid_shader->set_uniform_value("view_position", camera_->eye());
         glwrapper::draw_arrays(GL_TRIANGLES, 6);
     }
 
@@ -141,25 +139,17 @@ namespace smesh
         vao.enable_attrib(2);
         vao.bind_element_buffer(ebo);
         vao.bind();
-        if (state_ == State::kEdit)
-        {
-            shader_program_map_.at("edit_mode_shader")->use();
-            shader_program_map_.at("edit_mode_shader")->set_uniform_value("model_matrix", object->transform());
-            shader_program_map_.at("edit_mode_shader")->set_uniform_value("view_matrix", camera_->GetViewMatrix());
-            shader_program_map_.at("edit_mode_shader")->set_uniform_value("projection_matrix", camera_->GetProjectionMatrix());
-            shader_program_map_.at("edit_mode_shader")->set_uniform_value("view_position", camera_->eye());
-            shader_program_map_.at("edit_mode_shader")->set_uniform_value("viewport_x", width_);
-            shader_program_map_.at("edit_mode_shader")->set_uniform_value("viewport_y", height_);
-            shader_program_map_.at("edit_mode_shader")->set_uniform_value("line_width", line_width);
-        }
-        else if (state_ == State::kObject)
-        {
-            shader_program_map_.at("object_mode_shader")->use();
-            shader_program_map_.at("object_mode_shader")->set_uniform_value("model_matrix", object->transform());
-            shader_program_map_.at("object_mode_shader")->set_uniform_value("view_matrix", camera_->GetViewMatrix());
-            shader_program_map_.at("object_mode_shader")->set_uniform_value("projection_matrix", camera_->GetProjectionMatrix());
-            shader_program_map_.at("object_mode_shader")->set_uniform_value("view_position", camera_->eye());
-        }
+        auto& object_shader = shader_program_map_.at("object_shader");
+        object_shader->use();
+        object_shader->set_uniform_value("model_matrix", object->transform());
+        object_shader->set_uniform_value("view_matrix", camera_->GetViewMatrix());
+        object_shader->set_uniform_value("projection_matrix", camera_->GetProjectionMatrix());
+        object_shader->set_uniform_value("view_position", camera_->eye());
+        object_shader->set_uniform_value("viewport_x", width_);
+        object_shader->set_uniform_value("viewport_y", height_);
+        object_shader->set_uniform_value("line_width", line_width);
+        bool is_wireframe = state_ == State::kEdit ? true : false;
+        object_shader->set_uniform_value("is_wireframe", is_wireframe);
         glwrapper::draw_elements(GL_TRIANGLES, GL_UNSIGNED_INT, vao);
     }
 } // namespace smesh
