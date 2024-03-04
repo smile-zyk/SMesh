@@ -103,9 +103,13 @@ namespace smesh
             }
             else
             {
-                glm::vec2 motion = {static_cast<float>((current_mouse_position - last_mouse_position).x()) / width(),
-                                    static_cast<float>((current_mouse_position - last_mouse_position).y()) / height()};
-                renderer_->camera()->Rotate(motion);
+                glm::vec2 last_pos = glm::vec2((1.0 * last_mouse_position.x() / width()) * 2 - 1.0,
+                    (1.0 * last_mouse_position.y() / height()) * 2 - 1.0);
+                glm::vec2 cur_pos = glm::vec2((1.0 * current_mouse_position.x() / width()) * 2 - 1.0,
+                    (1.0 * current_mouse_position.y() / height()) * 2 - 1.0);
+                // glm::vec2 motion = {static_cast<float>((current_mouse_position - last_mouse_position).x()) / width(),
+                //                     static_cast<float>((current_mouse_position - last_mouse_position).y()) / height()};
+                renderer_->camera()->TrackBallRotate(last_pos, cur_pos);
             }
             last_mouse_position = current_mouse_position;
         }

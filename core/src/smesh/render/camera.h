@@ -8,6 +8,7 @@ namespace smesh
     {
       public:
         explicit Camera();
+        void TrackBallRotate(const glm::vec2& last_mouse_pos, const glm::vec2& cur_mouse_pos);
         void Rotate(const glm::vec2 &motion);
         void Move(const glm::vec2 &motion);
         void Approach(float ratio);
