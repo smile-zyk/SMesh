@@ -1,6 +1,7 @@
 // glad must include at first
 #include "renderwidget.h"
 #include "smesh/log/log.h"
+#include "smesh/render/utils.h"
 
 #include <QPoint>
 #include <QSurfaceFormat>
@@ -103,12 +104,8 @@ namespace smesh
             }
             else
             {
-                glm::vec2 last_pos = glm::vec2((1.0 * last_mouse_position.x() / width()) * 2 - 1.0,
-                    (1.0 * last_mouse_position.y() / height()) * 2 - 1.0);
-                glm::vec2 cur_pos = glm::vec2((1.0 * current_mouse_position.x() / width()) * 2 - 1.0,
-                    (1.0 * current_mouse_position.y() / height()) * 2 - 1.0);
-                // glm::vec2 motion = {static_cast<float>((current_mouse_position - last_mouse_position).x()) / width(),
-                //                     static_cast<float>((current_mouse_position - last_mouse_position).y()) / height()};
+                glm::vec2 last_pos = smesh::utils::Screen2Ndc({last_mouse_position.x(), last_mouse_position.y()}, {width(), height()});
+                glm::vec2 cur_pos = smesh::utils::Screen2Ndc({current_mouse_position.x(), current_mouse_position.y()}, {width(), height()});
                 renderer_->camera()->TrackBallRotate(last_pos, cur_pos);
             }
             last_mouse_position = current_mouse_position;

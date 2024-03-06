@@ -1,29 +1,25 @@
 #include "utils.h"
-#include <glm/fwd.hpp>
+#include <glm/vec3.hpp>
+#include <glm/mat4x4.hpp>
 
 namespace smesh
 {
     namespace utils
     {
-        glm::vec4 NdcToWorld(glm::vec3 ndc_point, Camera *camera)
+        glm::vec4 NdcToWorld(glm::vec3 ndc_point, glm::mat4 view_matrix, glm::mat4 proj_matrix)
         {
-            glm::mat4 view_matrix = camera->GetViewMatrix();
-            glm::mat4 projection_matrix = camera->GetProjectionMatrix();
-            float near = camera->znear();
-            float far = camera->zfar();
-            float z_view_space = 2 * near * far / (ndc_point.z * (far - near) - (far + near));
-            float w = -z_view_space;
-            glm::vec4 clip_point =
-                {
-                    ndc_point.x * w,
-                    ndc_point.y * w,
-                    ndc_point.z * w,
-                    w,
-                };
-            // p * v * world_point = clip_point
-            // => world_point = (p * v)^-1 * clip_point
-            glm::mat4 proj_view_inv = glm::inverse(projection_matrix * view_matrix);
-            return proj_view_inv * clip_point;
+            glm::vec4 world_point = inverse(proj_matrix * view_matrix) * glm::vec4(ndc_point, 1.0);
+            return world_point / world_point.w;
         }
+        
+        glm::vec2 Screen2Ndc(glm::vec2 screen_pos, glm::vec2 screen_size, bool is_reverse_y)
+        {
+            glm::vec2 ndc_pos = glm::vec2((screen_pos.x / screen_size.x) * 2 - 1.0,
+                    (screen_pos.y / screen_size.y) * 2 - 1.0);
+            if(is_reverse_y)
+                ndc_pos.y = -ndc_pos.y;
+            return ndc_pos;
+        }
+        
     } // namespace utils
 } // namespace smesh

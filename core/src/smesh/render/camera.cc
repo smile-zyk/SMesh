@@ -1,7 +1,6 @@
 #include "camera.h"
 #include <glm/ext/vector_relational.hpp>
 #include <glm/gtc/quaternion.hpp>
-#include "smesh/log/log.h"
 #include <optional>
 
 namespace smesh
@@ -24,33 +23,32 @@ namespace smesh
         }
         else
         {
-            SMESH_ERROR("Camera Rotate Wrong: pos is not in [-1, 1]");
             return std::nullopt;
         }
     }
 
     void Camera::TrackBallRotate(const glm::vec2& last_mouse_pos, const glm::vec2& cur_mouse_pos)
     {
-        auto last_trackball_opt = GetTrackBallCoord(last_mouse_pos);
-        auto cur_trackball_opt = GetTrackBallCoord(cur_mouse_pos);
+        auto last_trackball_opt = GetTrackBallCoord(-last_mouse_pos);
+        auto cur_trackball_opt = GetTrackBallCoord(-cur_mouse_pos);
+        if(last_trackball_opt == std::nullopt || cur_trackball_opt == std::nullopt) return;
         glm::vec3 last_trackball_coord = last_trackball_opt != std::nullopt ? last_trackball_opt.value(): glm::vec3();
         glm::vec3 cur_trackball_coord = cur_trackball_opt != std::nullopt ? cur_trackball_opt.value(): glm::vec3();
         bool is_equal = glm::all(glm::equal(last_trackball_coord, cur_trackball_coord, FLT_EPSILON));
         if(is_equal) return;
 
-        glm::vec3 rotate_axis_in_view_space = glm::cross(last_trackball_coord, cur_trackball_coord);
-        glm::vec3 rotate_axis_in_world_space = glm::inverse(GetViewMatrix()) * glm::vec4(rotate_axis_in_view_space, 1.0);
-        rotate_axis_in_world_space = glm::normalize(rotate_axis_in_world_space);
+        glm::vec3 rotate_axis_in_view_space = glm::normalize(glm::cross(last_trackball_coord, cur_trackball_coord));
+        glm::quat view_rotate = glm::quat_cast(glm::inverse(glm::mat3(GetViewMatrix())));
+        glm::vec3 rotate_axis_in_world_space = view_rotate * rotate_axis_in_view_space;
         float rotate_angle = glm::acos(fmin(1.0f, glm::dot(last_trackball_coord, cur_trackball_coord)));
-        rotate_angle *= 100;
-        SMESH_TRACE("rotate angle is {}", glm::degrees(rotate_angle));
-        SMESH_TRACE("rotate axis is ({}, {}, {})", rotate_axis_in_world_space.x, rotate_axis_in_world_space.y, rotate_axis_in_world_space.z);
+        rotate_angle *= 2;
         glm::quat rotate_quat = glm::quat(cos(rotate_angle / 2),
                             rotate_axis_in_world_space.x * sin(rotate_angle / 2),
                             rotate_axis_in_world_space.y * sin(rotate_angle / 2),
                             rotate_axis_in_world_space.z * sin(rotate_angle / 2));
 
         eye_ = rotate_quat * eye_;
+        up_ = rotate_quat * up_;
     }
 
     void Camera::Rotate(const glm::vec2 &motion)
@@ -95,6 +93,7 @@ namespace smesh
     {
         glm::vec3 centerVec = eye_ - target_;
         float radius = glm::length(centerVec);
+        if(radius <= 0.5 && ratio >= 0 ) return;
         float yaw = (float)std::atan2(centerVec.x, centerVec.z);
         float pitch = (float)std::asin(centerVec.y / radius);
         glm::vec3 offset;
