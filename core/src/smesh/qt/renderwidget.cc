@@ -5,6 +5,7 @@
 
 #include <QPoint>
 #include <QSurfaceFormat>
+#include <QPushButton>
 #include <QtImGui.h>
 #include <imgui.h>
 
@@ -24,6 +25,8 @@ namespace smesh
                 { Tick(); });
         tick_timer_.start(16);
         smesh::Log::Init();
+        renderer_ = std::make_unique<smesh::Renderer>();
+        QPushButton* btn = new QPushButton("test", this);
         SMESH_INFO("application init!");
     }
 
@@ -34,6 +37,7 @@ namespace smesh
     void RenderWidget::LoadModelObject(QString path)
     {
         renderer_->AddModelObject(std::make_unique<smesh::ModelObject>(path.toStdString(), path.toStdString()));
+        emit AddObject();
     }
     
     void RenderWidget::Tick()
@@ -51,7 +55,6 @@ namespace smesh
             return;
         }
         SMESH_INFO("OpenGL Init Successed");
-        renderer_ = std::make_unique<smesh::Renderer>();
         renderer_->Init();
         QtImGui::initialize(this);
     }

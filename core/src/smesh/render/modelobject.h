@@ -5,7 +5,6 @@
 #include <memory>
 #include <string>
 
-
 namespace smesh
 {
     class SMESH_API ModelObject

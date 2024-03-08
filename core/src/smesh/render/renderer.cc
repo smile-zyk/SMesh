@@ -15,6 +15,16 @@ namespace smesh
 {
     Renderer::Renderer()
     {
+
+    }
+
+    void Renderer::AddModelObject(std::unique_ptr<ModelObject> object)
+    {
+        object_list_.push_back(std::move(object));
+    }
+
+    void Renderer::Init()
+    {
         SMESH_TRACE("Render Init Begin");
         auto object_shader_program = std::make_unique<glwrapper::ShaderProgram>("D:/DEV/SMesh/core/src/smesh/render/shader/object_vertex.glsl",
                                                                                    "D:/DEV/SMesh/core/src/smesh/render/shader/object_fragment.glsl",
@@ -26,20 +36,11 @@ namespace smesh
         shader_program_map_.insert({"object_shader", std::move(object_shader_program)});
         shader_program_map_.insert({"grid_shader", std::move(grid_shader_program)});
         camera_ = std::make_unique<Camera>();
-        SMESH_TRACE("Render Init End");
-    }
-
-    void Renderer::AddModelObject(std::unique_ptr<ModelObject> object)
-    {
-        object_list_.push_back(std::move(object));
-    }
-
-    void Renderer::Init()
-    {
         glwrapper::set_clear_color(0.2f, 0.2f, 0.2f, 1.0f);
         glwrapper::enable(GL_DEPTH_TEST);
         glwrapper::enable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        SMESH_TRACE("Render Init End");
     }
 
     void Renderer::Update()
@@ -71,6 +72,12 @@ namespace smesh
         camera_->set_aspect(static_cast<float>(w) / h);
         width_ = w;
         height_ = h;
+    }
+    
+    ModelObject* Renderer::GetObject(size_t idx)
+    {
+        if(idx >= object_list_.size()) return nullptr;
+        return object_list_.at(idx).get();
     }
 
     void Renderer::UpdateTime()
