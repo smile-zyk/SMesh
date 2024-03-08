@@ -21,6 +21,8 @@ namespace smesh
         void Update();
         void Draw();
         void Resize(int w, int h);
+        ModelObject* GetObject(size_t idx);
+        size_t GetObjectCount() { return object_list_.size(); }
         Camera *camera() { return camera_.get(); }
       private:
         void UpdateTime();

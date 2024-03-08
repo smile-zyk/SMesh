@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QMainWindow>
+#include <QSharedPointer>
 
 namespace Ui
 {
@@ -15,5 +16,5 @@ class MainWindow : public QMainWindow
     ~MainWindow();
 
   private:
-    Ui::MainWindow *ui;
+    QSharedPointer<Ui::MainWindow> ui;
 };

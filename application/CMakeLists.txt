@@ -17,7 +17,12 @@ find_package(Qt5 COMPONENTS Widgets Core Gui REQUIRED)
 
 aux_source_directory(src SRC_DIR)
 
-add_executable(${PROJECT_NAME} ${SRC_DIR} src/main)
+qt5_add_resources(QRC_FILES
+ resources/qdarkstyle/dark/darkstyle.qrc
+ resources/qdarkstyle/light/lightstyle.qrc
+ )
+
+add_executable(${PROJECT_NAME} ${SRC_DIR} ${QRC_FILES})
 
 target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Widgets Qt5::Core Qt5::Gui)
 target_link_libraries(${PROJECT_NAME} PRIVATE smesh_core)

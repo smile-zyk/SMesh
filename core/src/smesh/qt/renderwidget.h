@@ -1,6 +1,6 @@
 #pragma once
-#include "smesh/render/renderer.h"
 #include "smesh/core.h"
+#include "smesh/render/renderer.h"
 
 #include <memory>
 
@@ -19,6 +19,10 @@ namespace smesh
         ~RenderWidget();
         void LoadModelObject(QString path);
         void Tick();
+        Renderer *renderer() { return renderer_.get(); }
+        
+      signals:
+        void AddObject();
 
       protected:
         virtual void initializeGL() Q_DECL_OVERRIDE;
@@ -42,6 +46,6 @@ namespace smesh
         typedef int InteractionStates;
         InteractionStates interaction_state_ = InteractionState::kNormal;
         QTimer tick_timer_;
-        std::unique_ptr<smesh::Renderer> renderer_;
+        std::unique_ptr<Renderer> renderer_;
     };
 } // namespace smesh
