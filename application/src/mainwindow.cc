@@ -16,7 +16,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     ObjectListModel *list_model = new ObjectListModel(ui->render_widget->renderer(), this);
     ui->object_list->setModel(list_model);
-
     setWindowTitle("SMesh");
     connect(ui->actionOpen, &QAction::triggered, this, [this]()
             {
@@ -25,8 +24,22 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
         if (!fileName.isNull()) {
             ui->render_widget->LoadModelObject(fileName);
         } });
+    ui->tabWidget->setTabVisible(1, false);
     connect(ui->render_widget, &smesh::RenderWidget::AddObject, this, [list_model, this]()
             { list_model->UpdateObject(static_cast<int>(ui->render_widget->renderer()->GetObjectCount() - 1)); });
+    connect(ui->object_list->selectionModel(), &QItemSelectionModel::selectionChanged, this, [this]()
+    {
+        auto idx = ui->object_list->selectionModel()->currentIndex();
+        if(idx.isValid())
+        {
+            ui->tabWidget->setTabVisible(1, true);
+        }
+        else 
+        {
+            ui->tabWidget->setTabVisible(1, false);
+        }
+        ui->render_widget->renderer()->set_selected_object_idx({idx.row()});
+    });
 }
 
 MainWindow::~MainWindow()

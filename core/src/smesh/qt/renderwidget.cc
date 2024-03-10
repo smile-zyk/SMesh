@@ -8,6 +8,7 @@
 #include <QPushButton>
 #include <QtImGui.h>
 #include <imgui.h>
+#include <ImGuizmo.h>
 
 #include <memory>
 #include <qnamespace.h>
@@ -26,7 +27,6 @@ namespace smesh
         tick_timer_.start(16);
         smesh::Log::Init();
         renderer_ = std::make_unique<smesh::Renderer>();
-        QPushButton* btn = new QPushButton("test", this);
         SMESH_INFO("application init!");
     }
 
@@ -63,17 +63,20 @@ namespace smesh
     {
         renderer_->Resize(w, h);
     }
-
+    static bool is_imgui_use = false;
     void RenderWidget::paintGL()
     {
         QtImGui::newFrame();
         renderer_->Draw();
         ImGui::Render();
         QtImGui::render();
+        const ImGuiIO& io = ImGui::GetIO();
+        is_imgui_use = io.WantCaptureMouse;
     }
 
     void RenderWidget::mousePressEvent(QMouseEvent *event)
     {
+        if(is_imgui_use) return;
         if (interaction_state_ == InteractionState::kNormal)
         {
             if (event->button() == Qt::LeftButton)
@@ -89,6 +92,7 @@ namespace smesh
 
     void RenderWidget::mouseReleaseEvent(QMouseEvent *event)
     {
+        if(is_imgui_use) return;
         if (interaction_state_ != InteractionState::kNormal)
         {
             interaction_state_ = InteractionState::kNormal;
@@ -131,6 +135,7 @@ namespace smesh
 
     void RenderWidget::wheelEvent(QWheelEvent *event)
     {
+         if(is_imgui_use) return;
         if (interaction_state_ == InteractionState::kNormal)
         {
             QPoint detla = event->angleDelta() / 120.f;

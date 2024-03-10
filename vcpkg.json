@@ -5,11 +5,16 @@
     "stb",
     "spdlog",
     "imgui",
-    "openmesh"
+    "openmesh",
+    "imguizmo"
   ],
   "overrides": [
     { 
         "name": "imgui", 
+        "version": "1.83"
+    },
+    {
+        "name": "imguizmo",
         "version": "1.83"
     }
   ]
