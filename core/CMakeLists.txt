@@ -21,8 +21,6 @@ aux_source_directory(src/smesh/qt SRC_DIR)
 
 add_library(${PROJECT_NAME} SHARED ${SRC_DIR})
 
-message("src dir is ${SRC_DIR}")
-
 target_include_directories(${PROJECT_NAME} PUBLIC src)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC glwrapper)

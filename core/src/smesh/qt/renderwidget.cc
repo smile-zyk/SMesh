@@ -2,8 +2,10 @@
 #include "renderwidget.h"
 #include "smesh/log/log.h"
 #include "smesh/render/utils.h"
+#include "rendercontrol.h"
 
 #include <QPoint>
+#include <QVBoxLayout>
 #include <QSurfaceFormat>
 #include <QPushButton>
 #include <QtImGui.h>
@@ -26,7 +28,13 @@ namespace smesh
                 { Tick(); });
         tick_timer_.start(16);
         smesh::Log::Init();
+        QVBoxLayout* layout = new QVBoxLayout(this);
+        setLayout(layout);
         renderer_ = std::make_unique<smesh::Renderer>();
+        RenderControl * control = new RenderControl(this);
+        control->setAttribute(Qt::WA_TranslucentBackground);
+        layout->addWidget(control);
+        connect(control, &RenderControl::SetGizmoMode, this, [this](GizmoMode mode){renderer_->set_gizmo_mode(mode);});
         SMESH_INFO("application init!");
     }
 
