@@ -8,9 +8,9 @@
 #include <QtImGui.h>
 #include <glm/fwd.hpp>
 #include <imgui.h>
+#include <ImGuizmo.h>
 #include <memory>
 #include <utility>
-#include <ImGuizmo.h>
 #include <glm/gtc/type_ptr.hpp>
 
 namespace smesh
@@ -104,6 +104,26 @@ namespace smesh
 
     static float line_width = 1.5;
 
+    static ImGuizmo::OPERATION GetGizmoOperation(GizmoMode mode)
+    {
+        ImGuizmo::OPERATION res = ImGuizmo::OPERATION::TRANSLATE;
+        switch (mode) {
+            case GizmoMode::kTranslate:
+                res = ImGuizmo::OPERATION::TRANSLATE;
+                break;
+            case GizmoMode::kRotate:
+                res = ImGuizmo::OPERATION::ROTATE;
+                break;
+            case GizmoMode::kScale:
+                res = ImGuizmo::OPERATION::SCALE;
+                break;
+            case GizmoMode::kTransform:
+                res = ImGuizmo::OPERATION::TRANSLATE | ImGuizmo::OPERATION::ROTATE | ImGuizmo::OPERATION::SCALE;
+                break;
+        }
+        return res;
+    }
+
     void Renderer::DrawImgui()
     {
         ImGuizmo::BeginFrame();
@@ -117,9 +137,11 @@ namespace smesh
         }
         ImGui::Begin("Debug");
         ImGui::Text("FPS: %lld", current_fps);
-        ImGui::RadioButton("Object Mode", &state_, State::kObject);
-        ImGui::RadioButton("Edit Mode", &state_, State::kEdit);
-        if (state_ == State::kEdit)
+        static int mode = 0;
+        ImGui::RadioButton("Object Mode", &mode, 0);
+        ImGui::RadioButton("Edit Mode", &mode, 1);
+        render_mode_ = (mode == 0) ? RenderMode::kObject : RenderMode::kWireframe;
+        if (render_mode_ == RenderMode::kWireframe)
         {
             ImGui::SliderFloat("LineWidth", &line_width, 0, 5);
         }
@@ -132,7 +154,7 @@ namespace smesh
             // ImGuizmo::SetDrawlist();
 
             ImGuizmo::SetRect(0, 0, 1.f * width_, 1.f * height_);
-            ImGuizmo::Manipulate(glm::value_ptr(camera_->GetViewMatrix()), glm::value_ptr(camera_->GetProjectionMatrix()), ImGuizmo::OPERATION::TRANSLATE | ImGuizmo::OPERATION::ROTATE | ImGuizmo::OPERATION::SCALE, ImGuizmo::LOCAL, glm::value_ptr(trans));
+            ImGuizmo::Manipulate(glm::value_ptr(camera_->GetViewMatrix()), glm::value_ptr(camera_->GetProjectionMatrix()), GetGizmoOperation(gizmo_mode_), ImGuizmo::LOCAL, glm::value_ptr(trans));
             if(ImGuizmo::IsUsing())
             {
                 object->set_transform(trans);
@@ -173,7 +195,7 @@ namespace smesh
         object_shader->set_uniform_value("viewport_x", width_);
         object_shader->set_uniform_value("viewport_y", height_);
         object_shader->set_uniform_value("line_width", line_width);
-        bool is_wireframe = state_ == State::kEdit ? true : false;
+        bool is_wireframe = render_mode_ == RenderMode::kWireframe ? true : false;
         object_shader->set_uniform_value("is_wireframe", is_wireframe);
         glwrapper::draw_elements(GL_TRIANGLES, GL_UNSIGNED_INT, vao);
     }

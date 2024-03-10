@@ -36,13 +36,6 @@ namespace smesh
         void wheelEvent(QWheelEvent *event) Q_DECL_OVERRIDE;
 
       private:
-        enum InteractionState
-        {
-            kNormal = 0,
-            kStart = 1 << 0,
-            kRotate = 1 << 1,
-            kMove = 1 << 2,
-        };
         typedef int InteractionStates;
         InteractionStates interaction_state_ = InteractionState::kNormal;
         QTimer tick_timer_;
