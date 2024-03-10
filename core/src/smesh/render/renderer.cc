@@ -10,6 +10,8 @@
 #include <imgui.h>
 #include <memory>
 #include <utility>
+#include <ImGuizmo.h>
+#include <glm/gtc/type_ptr.hpp>
 
 namespace smesh
 {
@@ -104,6 +106,7 @@ namespace smesh
 
     void Renderer::DrawImgui()
     {
+        ImGuizmo::BeginFrame();
         static long long current_fps = 0;
         // Must check whether current_frame_time is 0
         // Otherwise the program in Release mode maybe fail the first time it starts
@@ -119,6 +122,21 @@ namespace smesh
         if (state_ == State::kEdit)
         {
             ImGui::SliderFloat("LineWidth", &line_width, 0, 5);
+        }
+        if(selected_object_idx_.size() > 0)
+        {
+            int idx = selected_object_idx_.at(0);   
+            auto& object = object_list_.at(idx);
+            glm::mat4 trans = object->transform();
+            ImGuizmo::SetOrthographic(false);
+            // ImGuizmo::SetDrawlist();
+
+            ImGuizmo::SetRect(0, 0, 1.f * width_, 1.f * height_);
+            ImGuizmo::Manipulate(glm::value_ptr(camera_->GetViewMatrix()), glm::value_ptr(camera_->GetProjectionMatrix()), ImGuizmo::OPERATION::TRANSLATE | ImGuizmo::OPERATION::ROTATE | ImGuizmo::OPERATION::SCALE, ImGuizmo::LOCAL, glm::value_ptr(trans));
+            if(ImGuizmo::IsUsing())
+            {
+                object->set_transform(trans);
+            }
         }
         ImGui::End();
     }
