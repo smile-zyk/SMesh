@@ -24,8 +24,8 @@ namespace smesh
         void Update();
         void Draw();
         void Resize(int w, int h);
-        ModelObject *GetObject(size_t idx);
-        size_t GetObjectCount() { return object_list_.size(); }
+        ModelObject *object(size_t idx);
+        size_t object_count() { return object_list_.size(); }
         Camera *camera() { return camera_.get(); }
         void set_selected_object_idx(const std::vector<int> &idx) { selected_object_idx_ = idx; }
         std::vector<int> &selected_object_idx() { return selected_object_idx_; }

@@ -1,7 +1,10 @@
 #include "mainwindow.h"
+#include "smesh/qt/config_edit_widget.h"
 #include "ui_mainwindow.h"
 #include <QFileDialog>
 #include <QTextStream>
+#include <qboxlayout.h>
+#include <qpushbutton.h>
 #include <smesh/qt/object_list_model.h>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
@@ -24,9 +27,15 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
         if (!fileName.isNull()) {
             ui->render_widget->LoadModelObject(fileName);
         } });
-    ui->tabWidget->setTabVisible(1, false);
+    ui->tabWidget->setTabVisible(1, true);
     connect(ui->render_widget, &smesh::RenderWidget::AddObject, this, [list_model, this]()
-            { list_model->UpdateObject(static_cast<int>(ui->render_widget->renderer()->GetObjectCount() - 1)); });
+            { list_model->UpdateObject(static_cast<int>(ui->render_widget->renderer()->object_count() - 1)); });
+    ui->object_list->setSelectionMode(QAbstractItemView::SelectionMode::MultiSelection);
+        // QVBoxLayout* layout = new QVBoxLayout(ui->object_settings);
+        // ui->object_settings->setLayout(layout);
+        // QPushButton* btn = new QPushButton("test", ui->object_settings);
+        // // layout->addWidget(widget);
+        // layout->addWidget(btn);
     connect(ui->object_list->selectionModel(), &QItemSelectionModel::selectionChanged, this, [this]()
     {
         auto idx = ui->object_list->selectionModel()->currentIndex();
@@ -34,11 +43,18 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
         {
             ui->tabWidget->setTabVisible(1, true);
         }
-        else 
+        else
         {
             ui->tabWidget->setTabVisible(1, false);
         }
         ui->render_widget->renderer()->set_selected_object_idx({idx.row()});
+        auto config = ui->render_widget->renderer()->object(idx.row())->config();
+        ui->object_settings->set_config(config);
+        // smesh::ConfigEditWidget * widget = new smesh::ConfigEditWidget(config, ui->object_settings);
+        // QVBoxLayout* layout = new QVBoxLayout(ui->object_settings);
+        // ui->object_settings->setLayout(layout);
+        // layout->setContentsMargins(0,0,0,0);
+        // ui->object_settings->layout()->addWidget(widget);
     });
 }
 

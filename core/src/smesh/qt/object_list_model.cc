@@ -1,4 +1,5 @@
 #include "object_list_model.h"
+#include <qnamespace.h>
 
 ObjectListModel::ObjectListModel(smesh::Renderer *renderer, QObject *parent) : QAbstractListModel(parent)
 {
@@ -7,7 +8,7 @@ ObjectListModel::ObjectListModel(smesh::Renderer *renderer, QObject *parent) : Q
 
 int ObjectListModel::rowCount(const QModelIndex &parent) const 
 {
-    return static_cast<int>(renderer_->GetObjectCount());
+    return static_cast<int>(renderer_->object_count());
 }
 
 QVariant ObjectListModel::data(const QModelIndex &index, int role) const 
@@ -20,7 +21,7 @@ QVariant ObjectListModel::data(const QModelIndex &index, int role) const
 
     switch (role) {
         case Qt::DisplayRole:
-        return QString::fromStdString(renderer_->GetObject(row)->name());
+        return QString::fromStdString(renderer_->object(row)->name());
     }
     return {};
 }
