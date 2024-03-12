@@ -143,7 +143,7 @@ namespace smesh
 
     void RenderWidget::wheelEvent(QWheelEvent *event)
     {
-         if(is_imgui_use) return;
+        //if(is_imgui_use) return;
         if (interaction_state_ == InteractionState::kNormal)
         {
             QPoint detla = event->angleDelta() / 120.f;

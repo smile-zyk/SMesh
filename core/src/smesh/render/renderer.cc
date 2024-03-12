@@ -76,7 +76,7 @@ namespace smesh
         height_ = h;
     }
     
-    ModelObject* Renderer::GetObject(size_t idx)
+    ModelObject* Renderer::object(size_t idx)
     {
         if(idx >= object_list_.size()) return nullptr;
         return object_list_.at(idx).get();
