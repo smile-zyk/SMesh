@@ -48,13 +48,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
             ui->tabWidget->setTabVisible(1, false);
         }
         ui->render_widget->renderer()->set_selected_object_idx({idx.row()});
-        auto config = ui->render_widget->renderer()->object(idx.row())->config();
-        ui->object_settings->set_config(config);
-        // smesh::ConfigEditWidget * widget = new smesh::ConfigEditWidget(config, ui->object_settings);
-        // QVBoxLayout* layout = new QVBoxLayout(ui->object_settings);
-        // ui->object_settings->setLayout(layout);
-        // layout->setContentsMargins(0,0,0,0);
-        // ui->object_settings->layout()->addWidget(widget);
+        // auto config = ui->render_widget->renderer()->object(idx.row())->config();
+        // ui->object_settings->set_config(config);
     });
 }
 

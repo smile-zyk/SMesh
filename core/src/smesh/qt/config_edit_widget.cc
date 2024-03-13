@@ -16,23 +16,23 @@ namespace smesh
     
     void ConfigEditWidget::set_config(Config* config)
     {
-        QVBoxLayout* layout = new QVBoxLayout(this);
-        QtTreePropertyBrowser* browser = new QtTreePropertyBrowser(this);
-        QtVariantPropertyManager *variantManager = new QtVariantPropertyManager();
-        QtVariantEditorFactory *variantFactory = new QtVariantEditorFactory();
-        browser->setFactoryForManager(variantManager, variantFactory);
-        browser->setPropertiesWithoutValueMarked(true);
-        auto keys = config->keys();
-        for(auto& key: keys)
-        {
-            auto def = config->GetConfigDefinition(key);
-            QtVariantProperty* property = variantManager->addProperty(def->type(), key);
-            property->setValue(def->default_value());
-            property->setAttribute("minimum", def->min());
-            property->setAttribute("maximum", def->max());
-            browser->addProperty(property);
-        }
-        layout->setMargin(0);
-        layout->addWidget(browser);
+        // QVBoxLayout* layout = new QVBoxLayout(this);
+        // QtTreePropertyBrowser* browser = new QtTreePropertyBrowser(this);
+        // QtVariantPropertyManager *variantManager = new QtVariantPropertyManager();
+        // QtVariantEditorFactory *variantFactory = new QtVariantEditorFactory();
+        // browser->setFactoryForManager(variantManager, variantFactory);
+        // browser->setPropertiesWithoutValueMarked(true);
+        // auto keys = config->keys();
+        // for(auto& key: keys)
+        // {
+        //     auto def = config->GetConfigDefinition(key);
+        //     QtVariantProperty* property = variantManager->addProperty(def->type(), key);
+        //     property->setValue(def->default_value());
+        //     property->setAttribute("minimum", def->min());
+        //     property->setAttribute("maximum", def->max());
+        //     browser->addProperty(property);
+        // }
+        // layout->setMargin(0);
+        // layout->addWidget(browser);
     }
 }
