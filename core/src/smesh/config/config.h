@@ -1,12 +1,10 @@
 #pragma once
 
-#include "smesh/config/config.h"
 #include "smesh/core.h"
 #include <QHash>
 #include <QString>
 #include <QVariant>
-#include <qlist.h>
-#include <qvariant.h>
+#include <QtVariantPropertyManager>
 
 // config system based on QVariant
 
@@ -15,23 +13,24 @@ namespace smesh
     class PropertyDef;
     class ConfigDef;
 
-    typedef QHash<QString, PropertyDef> PropertyDefMap;
+    typedef int PropertyType;
+    typedef QString PropertyKey;
+    typedef QHash<PropertyKey, PropertyDef> PropertyDefMap;
     typedef QStringList PropertyKeyList;
-    typedef QHash<QString, QVariant> PropertyMap;
+    typedef QHash<PropertyKey, QVariant> PropertyMap;
 
     class SMESH_API PropertyDef
     {
       public:
         // for QHash initialize
         PropertyDef();
-        PropertyDef(const PropertyDef& other) = default;
-        PropertyDef(PropertyDef&& other) = default;
-        explicit PropertyDef(QVariant::Type type) : type_(type) {}
-        PropertyDef *AddSubProperty(const QString& key, QVariant::Type type);
-        bool AddSubProperty(const QString& key, const PropertyDef& def);
+        explicit PropertyDef(PropertyType type) : type_(type) {}
+        PropertyDef *AddSubProperty(const PropertyKey& key, QVariant::Type type);
+        bool AddSubProperty(const PropertyKey& key, const PropertyDef& def);
+        bool IsValid() { return type_ != QVariant::Type::Invalid; }
         bool IsEqual(PropertyDef* other) const;
-        bool IsKeyValid(const QString& key) const;
-        QVariant::Type type() const { return type_; }
+        bool IsSubKeyValid(const PropertyKey& key) const;
+        PropertyType type() const { return type_; }
         QVariant default_value() const { return default_value_; }
         QVariant min() const { return min_; }
         QVariant max() const { return max_; }
@@ -41,10 +40,10 @@ namespace smesh
         void set_max(const QVariant& max) { max_ = max; }
         void set_tool_tip(const QString& tool_tip) { tool_tip_ = tool_tip; }
         const PropertyKeyList& sub_keys() const { return sub_property_key_list_; }
-        PropertyDef* sub_property_def (const QString &key);
-        const PropertyDef* sub_property_def (const QString &key) const;
+        PropertyDef* sub_property_def (const PropertyKey &key);
+        const PropertyDef* sub_property_def (const PropertyKey &key) const;
       private:
-        QVariant::Type type_{};
+        PropertyType type_{};
         QVariant default_value_{};
         QVariant min_{};
         QVariant max_{};
@@ -56,15 +55,12 @@ namespace smesh
     class SMESH_API ConfigDef
     {
       public:
-        ConfigDef() = default;
-        ConfigDef(const ConfigDef &) = default;
-        ConfigDef(ConfigDef&&) = default;
         bool IsEqual(ConfigDef* def) const;
         bool IsKeyValid(const QString& key) const;
-        PropertyDef *AddProperty(const QString& key, QVariant::Type type);
-        bool AddProperty(const QString& key, PropertyDef def);
-        PropertyDef *property_def(const QString &key);
-        const PropertyDef *property_def(const QString &key) const;
+        PropertyDef *AddProperty(const PropertyKey& key, QVariant::Type type);
+        bool AddProperty(const PropertyKey& key, PropertyDef def);
+        PropertyDef *property_def(const PropertyKey &key);
+        const PropertyDef *property_def(const PropertyKey &key) const;
         const PropertyKeyList &keys() const { return property_key_list_; }
         PropertyKeyList all_keys();
 
@@ -72,29 +68,27 @@ namespace smesh
         PropertyDefMap property_def_map_{};
         PropertyKeyList property_key_list_{};
         PropertyKeyList CombineKey(const QString& parent_key, PropertyDef* def);
-      
-      protected:
     };
 
     class SMESH_API Config
     {
       public:
-        const PropertyKeyList& keys() { return def->keys(); }
-        PropertyKeyList all_keys() const { return def->all_keys(); }
+        Config(ConfigDef *def): def_(def){}
+        const PropertyKeyList& keys() { return def_->keys(); }
+        PropertyKeyList all_keys() const { return def_->all_keys(); }
         bool IsEqual(const Config& other) const;
-        bool IsKeyValid(const QString& key) const { return def->IsKeyValid(key); }
+        bool IsKeyValid(const PropertyKey& key) const { return def_->IsKeyValid(key); }
         PropertyKeyList diff_keys(const Config& other) const;
-        PropertyDef *property_def(const QString &key) { return def->property_def(key); }
-        const PropertyDef *property_def(const QString &key) const { return def->property_def(key); }
-        QVariant property(const QString& key) const;
-        bool set_property(const QString& key, QVariant value);
+        PropertyDef *property_def(const PropertyKey &key) { return def_->property_def(key); }
+        const PropertyDef *property_def(const PropertyKey &key) const { return def_->property_def(key); }
+        QVariant property(const PropertyKey& key) const;
+        bool set_property(const PropertyKey& key, QVariant value);
         bool WriteConfig(const QString &file_path) const;
         bool ReadConfig(const QString &file_path) const;
 
       private:
-        ConfigDef *def;
-        mutable PropertyMap config_map;
-      protected:
-        Config(ConfigDef *def);
+        ConfigDef *def_;
+        mutable PropertyMap config_map_;
+
     };
 } // namespace smesh

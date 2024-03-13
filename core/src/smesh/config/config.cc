@@ -8,7 +8,7 @@ namespace smesh
     {
     }
 
-    PropertyDef* PropertyDef::AddSubProperty(const QString& key, QVariant::Type type)
+    PropertyDef* PropertyDef::AddSubProperty(const PropertyKey& key, QVariant::Type type)
     {
         if(type == QVariant::Type::Invalid) return nullptr;
         if(sub_property_def_map_.contains(key) == true) return nullptr;
@@ -18,7 +18,7 @@ namespace smesh
         return &sub_property_def_map_[key];
     }
 
-    bool PropertyDef::AddSubProperty(const QString& key, const PropertyDef& def)
+    bool PropertyDef::AddSubProperty(const PropertyKey& key, const PropertyDef& def)
     {
         if(def.type() == QVariant::Type::Invalid) return false;
         if(sub_property_def_map_.contains(key) == true) return false;
@@ -47,7 +47,7 @@ namespace smesh
         return is_equal;
     }
     
-    bool PropertyDef::IsKeyValid(const QString& key) const
+    bool PropertyDef::IsSubKeyValid(const PropertyKey& key) const
     {
         QStringList parts = key.split('/');
         if(parts.count() == 0) return false;
@@ -62,11 +62,11 @@ namespace smesh
         {
             QString head = parts[0];
             QString remain = key.mid(head.size() + 1);
-            return sub_property_def(head)->IsKeyValid(remain);
+            return sub_property_def(head)->IsSubKeyValid(remain);
         }
     }
     
-    PropertyDef* PropertyDef::sub_property_def(const QString &key)
+    PropertyDef* PropertyDef::sub_property_def(const PropertyKey &key)
     {
         QStringList parts = key.split('/');
         if(parts.count() == 0) return nullptr;
@@ -86,7 +86,7 @@ namespace smesh
         }
     }
     
-    const PropertyDef* PropertyDef::sub_property_def(const QString &key) const
+    const PropertyDef* PropertyDef::sub_property_def(const PropertyKey &key) const
     {
         QStringList parts = key.split('/');
         if(parts.count() == 0) return nullptr;
@@ -119,7 +119,7 @@ namespace smesh
         return is_equal;
     }
     
-    bool ConfigDef::IsKeyValid(const QString& key) const
+    bool ConfigDef::IsKeyValid(const PropertyKey& key) const
     {
         QStringList parts = key.split('/');
         if(parts.count() == 0) return false;
@@ -134,11 +134,11 @@ namespace smesh
         {
             QString head = parts[0];
             QString remain = key.mid(head.size() + 1);
-            return property_def(head)->IsKeyValid(remain);
+            return property_def(head)->IsSubKeyValid(remain);
         }
     }
     
-    PropertyDef* ConfigDef::AddProperty(const QString& key, QVariant::Type type)
+    PropertyDef* ConfigDef::AddProperty(const PropertyKey& key, QVariant::Type type)
     {
         if(type == QVariant::Type::Invalid) return nullptr;
         if(property_def_map_.contains(key) == true) return nullptr;
@@ -148,7 +148,7 @@ namespace smesh
         return &property_def_map_[key];
     }
     
-    bool ConfigDef::AddProperty(const QString& key, PropertyDef def)
+    bool ConfigDef::AddProperty(const PropertyKey& key, PropertyDef def)
     {
         if(def.type() == QVariant::Type::Invalid) return false;
         if(property_def_map_.contains(key) == true) return false;
@@ -158,7 +158,7 @@ namespace smesh
         return true;
     }
     
-    PropertyDef* ConfigDef::property_def(const QString &key)
+    PropertyDef* ConfigDef::property_def(const PropertyKey &key)
     {
         QStringList parts = key.split('/');
         if(parts.count() == 0) return nullptr;
@@ -177,7 +177,7 @@ namespace smesh
         }
     }
     
-    const PropertyDef* ConfigDef::property_def(const QString &key) const
+    const PropertyDef* ConfigDef::property_def(const PropertyKey &key) const
     {
         QStringList parts = key.split('/');
         if(parts.count() == 0) return nullptr;
@@ -225,15 +225,15 @@ namespace smesh
         return diff;
     }
     
-    QVariant Config::property(const QString &key) const
+    QVariant Config::property(const PropertyKey &key) const
     {
         if(IsKeyValid(key))
         {
-            if(config_map.contains(key) == false)
+            if(config_map_.contains(key) == false)
             {
-                config_map[key] = property_def(key)->default_value();
+                config_map_[key] = property_def(key)->default_value();
             }
-            return config_map[key];
+            return config_map_[key];
         }
         else 
             return QVariant();
@@ -243,7 +243,7 @@ namespace smesh
     {
         if(IsKeyValid(key))
         {
-            config_map[key] = value;
+            config_map_[key] = value;
             return true;
         }
         else
