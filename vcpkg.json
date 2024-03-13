@@ -6,7 +6,8 @@
     "spdlog",
     "imgui",
     "openmesh",
-    "imguizmo"
+    "imguizmo",
+    "gtest"
   ],
   "overrides": [
     { 
