@@ -6,14 +6,15 @@
 #include <qboxlayout.h>
 #include <qpushbutton.h>
 #include <smesh/qt/object_list_model.h>
+#include <smesh/config/object_config.h>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
 {
-    QFile f(":qdarkstyle/dark/darkstyle.qss");
+    // QFile f(":qdarkstyle/dark/darkstyle.qss");
 
-    f.open(QFile::ReadOnly | QFile::Text);
-    QTextStream ts(&f);
-    qApp->setStyleSheet(ts.readAll());
+    // f.open(QFile::ReadOnly | QFile::Text);
+    // QTextStream ts(&f);
+    // qApp->setStyleSheet(ts.readAll());
 
     ui->setupUi(this);
 
@@ -27,15 +28,16 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
         if (!fileName.isNull()) {
             ui->render_widget->LoadModelObject(fileName);
         } });
-    ui->tabWidget->setTabVisible(1, true);
+    // ui->tabWidget->setTabVisible(1, true);
     connect(ui->render_widget, &smesh::RenderWidget::AddObject, this, [list_model, this]()
             { list_model->UpdateObject(static_cast<int>(ui->render_widget->renderer()->object_count() - 1)); });
-    ui->object_list->setSelectionMode(QAbstractItemView::SelectionMode::MultiSelection);
+    //ui->object_list->setSelectionMode(QAbstractItemView::SelectionMode::MultiSelection);
         // QVBoxLayout* layout = new QVBoxLayout(ui->object_settings);
         // ui->object_settings->setLayout(layout);
         // QPushButton* btn = new QPushButton("test", ui->object_settings);
         // // layout->addWidget(widget);
         // layout->addWidget(btn);
+    ui->object_settings->set_config_def(smesh::ModelObjectConfigDef::Instance());
     connect(ui->object_list->selectionModel(), &QItemSelectionModel::selectionChanged, this, [this]()
     {
         auto idx = ui->object_list->selectionModel()->currentIndex();

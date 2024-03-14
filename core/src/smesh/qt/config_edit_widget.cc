@@ -1,38 +1,45 @@
 #include "config_edit_widget.h"
+#include "qttreepropertybrowser.h"
+#include "qtvariantproperty.h"
 #include <QVBoxLayout>
 #include <QtTreePropertyBrowser>
 #include <QtVariantEditorFactory>
 #include <QtVariantPropertyManager>
 #include <QtVariantProperty>
+#include <qboxlayout.h>
 #include <qpushbutton.h>
 #include <qwidget.h>
 
 namespace smesh
 {
-    ConfigEditWidget::ConfigEditWidget(Config* config, QWidget* parent): QWidget(parent)
+    ConfigEditWidget::ConfigEditWidget(QWidget* parent) : QWidget(parent) 
     {
-        set_config(config);
+        variant_manager_ = new QtVariantPropertyManager(this);
+        variant_editor_factory_ = new QtVariantEditorFactory(this);
+        property_browser_ = new QtTreePropertyBrowser(this);
+        layout_ = new QVBoxLayout(this);
+        layout_->addWidget(property_browser_);
+        setLayout(layout_);
     }
     
-    void ConfigEditWidget::set_config(Config* config)
+    void ConfigEditWidget::set_config_def(const ConfigDef* def)
     {
-        // QVBoxLayout* layout = new QVBoxLayout(this);
-        // QtTreePropertyBrowser* browser = new QtTreePropertyBrowser(this);
-        // QtVariantPropertyManager *variantManager = new QtVariantPropertyManager();
-        // QtVariantEditorFactory *variantFactory = new QtVariantEditorFactory();
-        // browser->setFactoryForManager(variantManager, variantFactory);
-        // browser->setPropertiesWithoutValueMarked(true);
-        // auto keys = config->keys();
-        // for(auto& key: keys)
-        // {
-        //     auto def = config->GetConfigDefinition(key);
-        //     QtVariantProperty* property = variantManager->addProperty(def->type(), key);
-        //     property->setValue(def->default_value());
-        //     property->setAttribute("minimum", def->min());
-        //     property->setAttribute("maximum", def->max());
-        //     browser->addProperty(property);
-        // }
-        // layout->setMargin(0);
-        // layout->addWidget(browser);
+        config_def_ = def;
+        for(auto& key: def->keys())
+        {
+            property_browser_->addProperty(ConstructVariantProperty(key, def->property_def(key)));
+        }
+        property_browser_->setFactoryForManager(variant_manager_, variant_editor_factory_);
+        property_browser_->setPropertiesWithoutValueMarked(true);
+    }
+    
+    QtVariantProperty* ConfigEditWidget::ConstructVariantProperty(const PropertyKey& key, const PropertyDef* def)
+    {
+        QtVariantProperty* item = variant_manager_->addProperty(def->type(), key);
+        for(auto& sub_key : def->sub_keys())
+        {
+            item->addSubProperty(ConstructVariantProperty(sub_key, def->sub_property_def(sub_key)));
+        }
+        return item;
     }
 }

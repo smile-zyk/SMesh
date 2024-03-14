@@ -28,25 +28,6 @@ namespace smesh
         return true;
     }
     
-    bool PropertyDef::IsEqual(PropertyDef* other) const
-    {
-        bool is_equal = true;
-        is_equal &= (type_ == other->type());
-        is_equal &= (default_value_ == other->default_value());
-        is_equal &= (min_ == other->min());
-        is_equal &= (max_ == other->max());
-        is_equal &= (tool_tip_ == other->tool_tip());
-        const PropertyKeyList& self_keys = sub_keys();
-        const PropertyKeyList& other_keys = other->sub_keys();
-        is_equal &= (self_keys == other_keys);
-        if(is_equal == false) return false;
-
-        for(int i = 0; i < self_keys.count(); i++)
-            is_equal &= sub_property_def(self_keys[i])->IsEqual(other->sub_property_def(self_keys[i]));
-
-        return is_equal;
-    }
-    
     bool PropertyDef::IsSubKeyValid(const PropertyKey& key) const
     {
         QStringList parts = key.split('/');
@@ -66,6 +47,13 @@ namespace smesh
         }
     }
     
+    QVariant PropertyDef::attribute_value(const AttributeKey& attribute) const
+    {
+        if(attribute_map_.contains(attribute) == false)
+            return QVariant();
+        return attribute_map_[attribute];
+    }
+
     PropertyDef* PropertyDef::sub_property_def(const PropertyKey &key)
     {
         QStringList parts = key.split('/');
@@ -106,19 +94,6 @@ namespace smesh
         }
     }
     
-    bool ConfigDef::IsEqual(ConfigDef* other) const
-    {
-        const PropertyKeyList& self_keys = keys();
-        const PropertyKeyList& other_keys = other->keys();
-        bool is_equal = (self_keys == other_keys);
-        if(is_equal == false) return false;
-
-        for(int i = 0; i < self_keys.count(); i++)
-            is_equal &= property_def(self_keys[i])->IsEqual(other->property_def(self_keys[i]));
-
-        return is_equal;
-    }
-    
     bool ConfigDef::IsKeyValid(const PropertyKey& key) const
     {
         QStringList parts = key.split('/');
@@ -138,7 +113,7 @@ namespace smesh
         }
     }
     
-    PropertyDef* ConfigDef::AddProperty(const PropertyKey& key, QVariant::Type type)
+    PropertyDef* ConfigDef::AddProperty(const PropertyKey& key, int type)
     {
         if(type == QVariant::Type::Invalid) return nullptr;
         if(property_def_map_.contains(key) == true) return nullptr;
@@ -196,7 +171,7 @@ namespace smesh
         }
     }
     
-    PropertyKeyList ConfigDef::all_keys()
+    PropertyKeyList ConfigDef::all_keys() const
     {
         PropertyKeyList res;
         auto& self_keys = keys();
@@ -250,7 +225,7 @@ namespace smesh
             return false;
     }
     
-    PropertyKeyList ConfigDef::CombineKey(const QString& parent_key, PropertyDef* def)
+    PropertyKeyList ConfigDef::CombineKey(const QString& parent_key, const PropertyDef* def) const
     {
         PropertyKeyList res;
         auto& keys = def->sub_keys();
