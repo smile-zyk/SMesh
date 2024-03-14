@@ -1,7 +1,10 @@
 #pragma once
+#include "qttreepropertybrowser.h"
+#include "qtvariantproperty.h"
 #include "smesh/core.h"
 #include "smesh/config/config.h"
 #include <QWidget>
+#include <qboxlayout.h>
 
 namespace smesh 
 {
@@ -9,13 +12,16 @@ namespace smesh
     {
         Q_OBJECT
     public:
-        ConfigEditWidget(){}
-        explicit ConfigEditWidget(Config* config, QWidget* parent = nullptr);
-        void set_config(Config* config);
-        Config* config() { return config_; }
+        ConfigEditWidget(QWidget* parent = nullptr);
+        void set_config_def(const ConfigDef* def);
     signals:
         void valueChanged(QString key);
     private:
-        Config* config_;
+        QtVariantProperty* ConstructVariantProperty(const PropertyKey& key, const PropertyDef* def);
+        const ConfigDef* config_def_;
+        QtVariantPropertyManager* variant_manager_;
+        QtTreePropertyBrowser* property_browser_;
+        QtVariantEditorFactory* variant_editor_factory_;
+        QVBoxLayout* layout_;
     };
 }

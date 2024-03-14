@@ -1,6 +1,11 @@
 #include "gtest/gtest.h"
+#include "smesh/config/object_config.h"
 #include "smesh/config/config.h"
 #include <QtVariantPropertyManager>
+#include <QVector3D>
+#include <qvariant.h>
+#include <qvector3d.h>
+#include <QDebug>
 
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
@@ -22,12 +27,12 @@ TEST(PropertyDef, SetValue)
   EXPECT_EQ(def.type(), QVariant::Double);
   def.set_default_value(0.5);
   EXPECT_DOUBLE_EQ(def.default_value().toDouble(), 0.5);
-  def.set_max(10.0);
-  def.set_min(0.0);
-  EXPECT_DOUBLE_EQ(def.max().toDouble(), 10.0);
-  EXPECT_DOUBLE_EQ(def.min().toDouble(), 0.0);
-  def.set_tool_tip("test");
-  EXPECT_TRUE(def.tool_tip() == "test");
+  def.set_attribute_value("max", 10.0);
+  def.set_attribute_value("min", 0.0);
+  EXPECT_DOUBLE_EQ(def.attribute_value("max").toDouble(), 10.0);
+  EXPECT_DOUBLE_EQ(def.attribute_value("min").toDouble(), 0.0);
+  def.set_attribute_value("tooltip", "test_tool_tip");
+  EXPECT_TRUE(def.attribute_value("tooltip").toString() == "test_tool_tip");
 }
 
 TEST(PropertyDef, SubPropertyDef)
@@ -35,10 +40,9 @@ TEST(PropertyDef, SubPropertyDef)
   // def1
   // - "test1": def0
   //    - "test1": sub_0
-
   smesh::PropertyDef def0(QVariant::Int);
   smesh::PropertyDef def1(QVariant::Double);
-
+  
   auto sub_0 = def0.AddSubProperty("test1", QVariant::Int);
   ASSERT_TRUE(sub_0 != nullptr);
 
@@ -60,4 +64,14 @@ TEST(PropertyDef, SubPropertyDef)
   EXPECT_TRUE(def1.sub_property_def("test1")->sub_property_def("test1")->default_value().toInt() == 15);
   EXPECT_EQ(def1.sub_property_def("test1")->sub_property_def("test1"), def1.sub_property_def("test1/test1"));
   EXPECT_TRUE(def0.sub_property_def("test1")->default_value().toInt() == 15);
+  EXPECT_TRUE(def1.sub_keys() == QStringList{"test1"});
+  EXPECT_TRUE(def1.IsSubKeyValid("test1"));
+  EXPECT_TRUE(def1.IsSubKeyValid("test1/test1"));
 }
+
+TEST(ModelObjectConfig, config)
+{
+  smesh::ModelObjectConfig config = smesh::ModelObjectConfig::Create();
+  qDebug() << config.all_keys();
+}
+
