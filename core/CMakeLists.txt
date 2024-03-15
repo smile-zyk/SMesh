@@ -2,13 +2,6 @@ cmake_minimum_required (VERSION 3.5)
 
 project(smesh_core)
 
-set(Qt5_DIR $ENV{Qt5_PREFIX_PATH}/lib/cmake/Qt5)
-
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
-set(CMAKE_AUTOUIC ON)
-
-find_package(Qt5 COMPONENTS Widgets Core Gui REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 find_package(OpenMesh CONFIG REQUIRED)
 find_package(imguizmo CONFIG REQUIRED)

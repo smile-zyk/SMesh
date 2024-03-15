@@ -20,6 +20,7 @@ namespace smesh
         QtVariantProperty* ConstructVariantProperty(const PropertyKey& key, const PropertyDef* def);
         const ConfigDef* config_def_;
         QtVariantPropertyManager* variant_manager_;
+        QtVariantPropertyManager* variant_manager_read_only_;
         QtTreePropertyBrowser* property_browser_;
         QtVariantEditorFactory* variant_editor_factory_;
         QVBoxLayout* layout_;

@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include "smesh/config/scene_config.h"
 #include "smesh/qt/config_edit_widget.h"
 #include "ui_mainwindow.h"
 #include <QFileDialog>
@@ -7,14 +8,15 @@
 #include <qpushbutton.h>
 #include <smesh/qt/object_list_model.h>
 #include <smesh/config/object_config.h>
+#include <smesh/config/scene_config.h>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
 {
-    // QFile f(":qdarkstyle/dark/darkstyle.qss");
+    QFile f(":qdarkstyle/dark/darkstyle.qss");
 
-    // f.open(QFile::ReadOnly | QFile::Text);
-    // QTextStream ts(&f);
-    // qApp->setStyleSheet(ts.readAll());
+    f.open(QFile::ReadOnly | QFile::Text);
+    QTextStream ts(&f);
+    qApp->setStyleSheet(ts.readAll());
 
     ui->setupUi(this);
 
@@ -38,6 +40,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
         // // layout->addWidget(widget);
         // layout->addWidget(btn);
     ui->object_settings->set_config_def(smesh::ModelObjectConfigDef::Instance());
+    ui->global_settings->set_config_def(smesh::SceneConfigDef::Instance());
     connect(ui->object_list->selectionModel(), &QItemSelectionModel::selectionChanged, this, [this]()
     {
         auto idx = ui->object_list->selectionModel()->currentIndex();
