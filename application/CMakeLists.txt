@@ -2,19 +2,6 @@ cmake_minimum_required(VERSION 3.21)
 
 project(application VERSION 0.0.1 LANGUAGES CXX)
 
-# set Qt6 path
-# see in https://stackoverflow.com/questions/71086422/cmake-cannot-find-packages-within-qt6-installation
-# list(APPEND CMAKE_PREFIX_PATH ${Qt6_PREFIX_PATH})
-
-# use Qt5
-set(Qt5_DIR $ENV{Qt5_PREFIX_PATH}/lib/cmake/Qt5)
-
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
-set(CMAKE_AUTOUIC ON)
-
-find_package(Qt5 COMPONENTS Widgets Core Gui REQUIRED)
-
 aux_source_directory(src SRC_DIR)
 
 qt5_add_resources(QRC_FILES
@@ -30,7 +17,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE SMESH_PLATFORM_WINDOWS _USE_M
 target_compile_definitions(${PROJECT_NAME} PRIVATE _USE_MATH_DEFINES)
 
 # run windeployqt
-add_custom_command(TARGET 
+add_custom_command(TARGET
     ${PROJECT_NAME} POST_BUILD
     COMMAND "$ENV{Qt5_PREFIX_PATH}/bin/windeployqt.exe" $<TARGET_FILE:${PROJECT_NAME}>
     COMMENT "run windeployqt")

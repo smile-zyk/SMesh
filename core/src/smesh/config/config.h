@@ -19,6 +19,7 @@ namespace smesh
     typedef QString AttributeKey;
     typedef QHash<PropertyKey, PropertyDef> PropertyDefMap;
     typedef QStringList PropertyKeyList;
+    typedef QStringList AttributeList;
     typedef QHash<PropertyKey, QVariant> PropertyMap;
     typedef QHash<AttributeKey, QVariant> AttributeMap;
 
@@ -35,8 +36,13 @@ namespace smesh
         PropertyType type() const { return type_; }
         QVariant default_value() const { return default_value_; }
         void set_default_value(const QVariant &value) { default_value_ = value; }
+        QString tool_tip() const { return tool_tip_; }
+        void set_tool_tip(const QString& tool_tip) { tool_tip_ = tool_tip; }
+        bool read_only() const { return read_only_; }
+        void set_read_only(bool read_only) { read_only_ = read_only; }
         void set_attribute_value(const AttributeKey &attribute, const QVariant &value) { attribute_map_.insert(attribute, value); }
         QVariant attribute_value(const AttributeKey &attribute) const;
+        AttributeList attributes() const { return attribute_map_.keys(); }
         const PropertyKeyList &sub_keys() const { return sub_property_key_list_; }
         PropertyDef *sub_property_def(const PropertyKey &key);
         const PropertyDef *sub_property_def(const PropertyKey &key) const;
@@ -44,6 +50,8 @@ namespace smesh
       private:
         PropertyType type_{};
         QVariant default_value_{};
+        QString tool_tip_{};
+        bool read_only_{};
         AttributeMap attribute_map_{};
         PropertyDefMap sub_property_def_map_{};
         PropertyKeyList sub_property_key_list_{};

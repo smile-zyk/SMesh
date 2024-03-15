@@ -14,30 +14,23 @@ namespace smesh
 
     ModelObjectConfigDef::ModelObjectConfigDef()
     {
-        auto translate_def = AddProperty("Translate", QtVariantPropertyManager::groupTypeId());
-        
-        auto translate_x_def = translate_def->AddSubProperty("TranslateX", QVariant::Double);
-        translate_x_def->set_default_value(0.5);
-        translate_x_def->set_attribute_value("tooltip", "Translate X");
-        auto translate_y_def = translate_def->AddSubProperty("TranslateY", QVariant::Double);
-        translate_y_def->set_default_value(0.5);
-        translate_y_def->set_attribute_value("tooltip", "Translate Y");
-        auto translate_z_def = translate_def->AddSubProperty("TranslateZ", QVariant::Double);
-        translate_z_def->set_default_value(1.0);
-        translate_z_def->set_attribute_value("tooltip", "Translate Z");
-
-        auto rotate_def = AddProperty("Rotate", QtVariantPropertyManager::groupTypeId());
-        auto rotate_x_def = rotate_def->AddSubProperty("RotateX", QVariant::Double);
-        rotate_x_def->set_default_value(0.5);
-        rotate_x_def->set_attribute_value("tooltip", "Rotate X");
-        auto rotate_y_def = rotate_def->AddSubProperty("RotateY", QVariant::Double);
-        rotate_y_def->set_default_value(0.5);
-        rotate_y_def->set_attribute_value("tooltip", "Rotate Y");
-        auto rotate_z_def = rotate_def->AddSubProperty("RotateZ", QVariant::Double);
-        rotate_z_def->set_default_value(1.0);
-        rotate_z_def->set_attribute_value("tooltip", "Rotate Z");
-
-        auto point_def = AddProperty("Point", QVariant::Point);
+        auto transform_def = AddProperty("Transform", QtVariantPropertyManager::groupTypeId());
+        auto translate_def = transform_def->AddSubProperty("Translate", QVariant::RectF);
+        translate_def->set_tool_tip("translate");
+        auto rotate_def = transform_def->AddSubProperty("Rotate", QVariant::RectF);
+        rotate_def->set_tool_tip("rotate");
+        auto scale_def = transform_def->AddSubProperty("Scale", QVariant::RectF);
+        scale_def->set_tool_tip("scale");
+        auto info_def = AddProperty("Information", QtVariantPropertyManager::groupTypeId());
+        auto vertex_def = info_def->AddSubProperty("Vertex Count", QVariant::Int);
+        vertex_def->set_tool_tip("vertex count");
+        vertex_def->set_read_only(true);
+        auto edge_def = info_def->AddSubProperty("Edge Count", QVariant::Int);
+        edge_def->set_tool_tip("edge count");
+        edge_def->set_read_only(true);
+        auto face_def = info_def->AddSubProperty("Face Count", QVariant::Int);
+        face_def->set_tool_tip("face count");
+        face_def->set_read_only(true);
     } 
     
     ModelObjectConfig ModelObjectConfig::Create()
