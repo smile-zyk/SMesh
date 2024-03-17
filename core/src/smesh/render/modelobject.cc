@@ -1,5 +1,6 @@
 #include "modelobject.h"
 #include <memory>
+#include "smesh/log/log.h"
 
 namespace smesh
 {
@@ -8,14 +9,11 @@ namespace smesh
         name_ = name;
         mesh_ = std::make_shared<Mesh>(path);
         transform_ = glm::mat4(1.0);
-        // config_ = std::make_unique<Config>();
-        // auto def = config_->AddConfigDefinition("Test1", QVariant::Int);
-        // def->set_default_value(5);
-        // def->set_min(0);
-        // def->set_max(10);
-
-        // def = config_->AddConfigDefinition("Test2", QVariant::Bool);
-        // def->set_default_value(false);
+        config_ = ModelObjectConfig::CreateUnique();
+        connect(config_.get(), &Config::propertyChanged, this, [this](const PropertyKey& key, QVariant value)
+        {
+            SMESH_INFO("111");
+        });
     }
     
     ModelObject::ModelObject(const std::string &path)

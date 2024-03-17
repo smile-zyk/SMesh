@@ -69,9 +69,4 @@ TEST(PropertyDef, SubPropertyDef)
   EXPECT_TRUE(def1.IsSubKeyValid("test1/test1"));
 }
 
-TEST(ModelObjectConfig, config)
-{
-  smesh::ModelObjectConfig config = smesh::ModelObjectConfig::Create();
-  qDebug() << config.all_keys();
-}
 

@@ -45,6 +45,8 @@
 #include <QtCore/QMap>
 #include <QtCore/QTimer>
 #include <QtGui/QIcon>
+#include <QtGui/QVector3D>
+#include <QtGui/QVector4D>
 #include <QtCore/QMetaEnum>
 #include <QtGui/QFontDatabase>
 #include <QtWidgets/QStyleOption>
@@ -587,6 +589,8 @@ public:
         int minVal{-INT_MAX};
         int maxVal{INT_MAX};
         int singleStep{1};
+        QString prefix{};
+        QString suffix{};
         int minimumValue() const { return minVal; }
         int maximumValue() const { return maxVal; }
         void setMinimumValue(int newMinVal) { setSimpleMinimumData(this, newMinVal); }
@@ -714,6 +718,16 @@ int QtIntPropertyManager::singleStep(const QtProperty *property) const
     return getData<int>(d_ptr->m_values, &QtIntPropertyManagerPrivate::Data::singleStep, property, 0);
 }
 
+QString QtIntPropertyManager::prefix(const QtProperty *property) const
+{
+    return getData<QString>(d_ptr->m_values, &QtIntPropertyManagerPrivate::Data::prefix, property, 0);
+}
+
+QString QtIntPropertyManager::suffix(const QtProperty *property) const
+{
+    return getData<QString>(d_ptr->m_values, &QtIntPropertyManagerPrivate::Data::suffix, property, 0);
+}
+
 /*!
     \reimp
 */
@@ -722,7 +736,7 @@ QString QtIntPropertyManager::valueText(const QtProperty *property) const
     const QtIntPropertyManagerPrivate::PropertyValueMap::const_iterator it = d_ptr->m_values.constFind(property);
     if (it == d_ptr->m_values.constEnd())
         return QString();
-    return QString::number(it.value().val);
+    return prefix(property) + QString::number(it.value().val) + suffix(property);
 }
 
 /*!
@@ -833,6 +847,42 @@ void QtIntPropertyManager::setSingleStep(QtProperty *property, int step)
     emit singleStepChanged(property, data.singleStep);
 }
 
+void QtIntPropertyManager::setPrefix(QtProperty *property, const QString& prefix)
+{
+    const QtIntPropertyManagerPrivate::PropertyValueMap::iterator it = d_ptr->m_values.find(property);
+    if (it == d_ptr->m_values.end())
+        return;
+
+    QtIntPropertyManagerPrivate::Data data = it.value();
+
+    if (data.prefix == prefix)
+        return;
+
+    data.prefix = prefix;
+
+    it.value() = data;
+
+    emit prefixChanged(property, data.prefix);
+}
+
+void QtIntPropertyManager::setSuffix(QtProperty *property, const QString& suffix)
+{
+    const QtIntPropertyManagerPrivate::PropertyValueMap::iterator it = d_ptr->m_values.find(property);
+    if (it == d_ptr->m_values.end())
+        return;
+
+    QtIntPropertyManagerPrivate::Data data = it.value();
+
+    if (data.suffix == suffix)
+        return;
+
+    data.suffix = suffix;
+
+    it.value() = data;
+
+    emit suffixChanged(property, data.suffix);
+}
+
 /*!
     \reimp
 */
@@ -864,6 +914,8 @@ public:
         double maxVal{DBL_MAX};
         double singleStep{1};
         int decimals{2};
+        QString prefix{};
+        QString suffix{};
         double minimumValue() const { return minVal; }
         double maximumValue() const { return maxVal; }
         void setMinimumValue(double newMinVal) { setSimpleMinimumData(this, newMinVal); }
@@ -1012,6 +1064,16 @@ int QtDoublePropertyManager::decimals(const QtProperty *property) const
     return getData<int>(d_ptr->m_values, &QtDoublePropertyManagerPrivate::Data::decimals, property, 0);
 }
 
+QString QtDoublePropertyManager::prefix(const QtProperty *property) const
+{
+    return getData<QString>(d_ptr->m_values, &QtDoublePropertyManagerPrivate::Data::prefix, property, 0);
+}
+
+QString QtDoublePropertyManager::suffix(const QtProperty *property) const
+{
+    return getData<QString>(d_ptr->m_values, &QtDoublePropertyManagerPrivate::Data::suffix, property, 0);
+}
+
 /*!
     \reimp
 */
@@ -1020,7 +1082,8 @@ QString QtDoublePropertyManager::valueText(const QtProperty *property) const
     const QtDoublePropertyManagerPrivate::PropertyValueMap::const_iterator it = d_ptr->m_values.constFind(property);
     if (it == d_ptr->m_values.constEnd())
         return QString();
-    return QString::number(it.value().val, 'f', it.value().decimals);
+
+    return prefix(property) + QString::number(it.value().val, 'f', it.value().decimals) + suffix(property);
 }
 
 /*!
@@ -1101,6 +1164,42 @@ void QtDoublePropertyManager::setDecimals(QtProperty *property, int prec)
     it.value() = data;
 
     emit decimalsChanged(property, data.decimals);
+}
+
+void QtDoublePropertyManager::setPrefix(QtProperty *property, const QString& prefix)
+{
+    const QtDoublePropertyManagerPrivate::PropertyValueMap::iterator it = d_ptr->m_values.find(property);
+    if (it == d_ptr->m_values.end())
+        return;
+
+    QtDoublePropertyManagerPrivate::Data data = it.value();
+
+    if (data.prefix == prefix)
+        return;
+
+    data.prefix = prefix;
+
+    it.value() = data;
+
+    emit prefixChanged(property, data.prefix);
+}
+
+void QtDoublePropertyManager::setSuffix(QtProperty *property, const QString& suffix)
+{
+    const QtDoublePropertyManagerPrivate::PropertyValueMap::iterator it = d_ptr->m_values.find(property);
+    if (it == d_ptr->m_values.end())
+        return;
+
+    QtDoublePropertyManagerPrivate::Data data = it.value();
+
+    if (data.suffix == suffix)
+        return;
+
+    data.suffix = suffix;
+
+    it.value() = data;
+
+    emit suffixChanged(property, data.suffix);
 }
 
 /*!
@@ -6422,6 +6521,467 @@ void QtCursorPropertyManager::initializeProperty(QtProperty *property)
 */
 void QtCursorPropertyManager::uninitializeProperty(QtProperty *property)
 {
+    d_ptr->m_values.remove(property);
+}
+
+class QtVector3DPropertyManagerPrivate
+{
+    QtVector3DPropertyManager *q_ptr;
+    Q_DECLARE_PUBLIC(QtVector3DPropertyManager)
+  public:
+    struct Data
+    {
+        QVector3D val{};
+        int decimals{2};
+    };
+
+    void slotDoubleChanged(QtProperty *property, double value);
+    void slotPropertyDestroyed(QtProperty *property);
+
+    typedef QMap<const QtProperty *, Data> PropertyValueMap;
+    PropertyValueMap m_values;
+
+    QtDoublePropertyManager *m_doublePropertyManager;
+
+    QMap<const QtProperty *, QtProperty *> m_propertyToX;
+    QMap<const QtProperty *, QtProperty *> m_propertyToY;
+    QMap<const QtProperty *, QtProperty *> m_propertyToZ;
+
+    QMap<const QtProperty *, QtProperty *> m_xToProperty;
+    QMap<const QtProperty *, QtProperty *> m_yToProperty;
+    QMap<const QtProperty *, QtProperty *> m_zToProperty;
+};
+
+void QtVector3DPropertyManagerPrivate::slotDoubleChanged(QtProperty *property, double value)
+{
+    if (QtProperty *prop = m_xToProperty.value(property, 0))
+    {
+        QVector3D p = m_values[prop].val;
+        p.setX(value);
+        q_ptr->setValue(prop, p);
+    }
+    else if (QtProperty *prop = m_yToProperty.value(property, 0))
+    {
+        QVector3D p = m_values[prop].val;
+        p.setY(value);
+        q_ptr->setValue(prop, p);
+    }
+    else if (QtProperty *prop = m_zToProperty.value(property, 0))
+    {
+        QVector3D p = m_values[prop].val;
+        p.setZ(value);
+        q_ptr->setValue(prop, p);
+    }
+}
+
+void QtVector3DPropertyManagerPrivate::slotPropertyDestroyed(QtProperty *property)
+{
+    if (QtProperty *pointProp = m_xToProperty.value(property, 0))
+    {
+        m_propertyToX[pointProp] = 0;
+        m_xToProperty.remove(property);
+    }
+    else if (QtProperty *pointProp = m_yToProperty.value(property, 0))
+    {
+        m_propertyToY[pointProp] = 0;
+        m_yToProperty.remove(property);
+    }
+    else if (QtProperty *pointProp = m_zToProperty.value(property, 0))
+    {
+        m_propertyToZ[pointProp] = 0;
+        m_zToProperty.remove(property);
+    }
+}
+
+/*!
+    \class QtVector3DPropertyManager
+
+    \brief The QtVector3DPropertyManager provides and manages QVector3D properties. by smile_zyk
+
+    \sa QtAbstractPropertyManager
+*/
+
+QtVector3DPropertyManager::QtVector3DPropertyManager(QObject* parent): QtAbstractPropertyManager(parent), d_ptr(new QtVector3DPropertyManagerPrivate)
+{
+    d_ptr->q_ptr = this;
+
+    d_ptr->m_doublePropertyManager = new QtDoublePropertyManager(this);
+    connect(d_ptr->m_doublePropertyManager, SIGNAL(valueChanged(QtProperty*,double)),
+                this, SLOT(slotDoubleChanged(QtProperty*,double)));
+    connect(d_ptr->m_doublePropertyManager, SIGNAL(propertyDestroyed(QtProperty*)),
+                this, SLOT(slotPropertyDestroyed(QtProperty*)));
+}
+
+QtVector3DPropertyManager::~QtVector3DPropertyManager()
+{
+    clear();
+}
+
+QtDoublePropertyManager* QtVector3DPropertyManager::subDoublePropertyManager() const
+{
+    return d_ptr->m_doublePropertyManager;
+}
+
+QVector3D QtVector3DPropertyManager::value(const QtProperty* property) const
+{
+    return getValue<QVector3D>(d_ptr->m_values, property);
+}
+
+int QtVector3DPropertyManager::decimals(const QtProperty *property) const
+{
+    return getData<int>(d_ptr->m_values, &QtVector3DPropertyManagerPrivate::Data::decimals, property, 0);
+}
+
+void QtVector3DPropertyManager::setValue(QtProperty *property, const QVector3D &val)
+{
+    const QtVector3DPropertyManagerPrivate::PropertyValueMap::iterator it = d_ptr->m_values.find(property);
+    if (it == d_ptr->m_values.end())
+        return;
+
+    if (it.value().val == val)
+        return;
+
+    it.value().val = val;
+    d_ptr->m_doublePropertyManager->setValue(d_ptr->m_propertyToX[property], val.x());
+    d_ptr->m_doublePropertyManager->setValue(d_ptr->m_propertyToY[property], val.y());    
+    d_ptr->m_doublePropertyManager->setValue(d_ptr->m_propertyToZ[property], val.z());
+
+    emit propertyChanged(property);
+    emit valueChanged(property, val);
+}
+
+void QtVector3DPropertyManager::setDecimals(QtProperty *property, int prec)
+{
+    const QtVector3DPropertyManagerPrivate::PropertyValueMap::iterator it = d_ptr->m_values.find(property);
+    if (it == d_ptr->m_values.end())
+        return;
+
+    if (prec > 13)
+        prec = 13;
+    else if (prec < 0)
+        prec = 0;
+
+    if (it.value().decimals == prec)
+        return;
+
+    it.value().decimals = prec;
+    d_ptr->m_doublePropertyManager->setDecimals(d_ptr->m_propertyToX[property], prec);
+    d_ptr->m_doublePropertyManager->setDecimals(d_ptr->m_propertyToY[property], prec);
+    d_ptr->m_doublePropertyManager->setDecimals(d_ptr->m_propertyToZ[property], prec);
+
+    emit decimalsChanged(property, it.value().decimals);
+}
+
+QString QtVector3DPropertyManager::valueText(const QtProperty *property) const
+{
+    const QtVector3DPropertyManagerPrivate::PropertyValueMap::const_iterator it = d_ptr->m_values.constFind(property);
+    if (it == d_ptr->m_values.constEnd())
+        return QString();
+    const QVector3D v = it.value().val;
+    const int dec =  it.value().decimals;
+    return tr("(%1, %2, %3)").arg(QString::number(v.x(), 'f', dec))
+                         .arg(QString::number(v.y(), 'f', dec))
+                         .arg(QString::number(v.z(), 'f', dec));
+}
+
+void QtVector3DPropertyManager::initializeProperty(QtProperty *property)
+{
+    d_ptr->m_values[property] = QtVector3DPropertyManagerPrivate::Data();
+
+    QtProperty *xProp = d_ptr->m_doublePropertyManager->addProperty();
+    xProp->setPropertyName(tr("X"));
+    d_ptr->m_doublePropertyManager->setDecimals(xProp, decimals(property));
+    d_ptr->m_doublePropertyManager->setValue(xProp, d_ptr->m_values[property].val.x());
+    d_ptr->m_propertyToX[property] = xProp;
+    d_ptr->m_xToProperty[xProp] = property;
+    property->addSubProperty(xProp);
+
+    QtProperty *yProp = d_ptr->m_doublePropertyManager->addProperty();
+    yProp->setPropertyName(tr("Y"));
+    d_ptr->m_doublePropertyManager->setDecimals(yProp, decimals(property));
+    d_ptr->m_doublePropertyManager->setValue(yProp, d_ptr->m_values[property].val.y());
+    d_ptr->m_propertyToY[property] = yProp;
+    d_ptr->m_yToProperty[yProp] = property;
+    property->addSubProperty(yProp);
+
+    QtProperty *zProp = d_ptr->m_doublePropertyManager->addProperty();
+    zProp->setPropertyName(tr("Z"));
+    d_ptr->m_doublePropertyManager->setDecimals(zProp, decimals(property));
+    d_ptr->m_doublePropertyManager->setValue(zProp, d_ptr->m_values[property].val.z());
+    d_ptr->m_propertyToZ[property] = zProp;
+    d_ptr->m_zToProperty[zProp] = property;
+    property->addSubProperty(zProp);
+}
+
+void QtVector3DPropertyManager::uninitializeProperty(QtProperty *property)
+{
+    QtProperty *xProp = d_ptr->m_propertyToX[property];
+    if (xProp) {
+        d_ptr->m_xToProperty.remove(xProp);
+        delete xProp;
+    }
+    d_ptr->m_propertyToX.remove(property);
+
+    QtProperty *yProp = d_ptr->m_propertyToY[property];
+    if (yProp) {
+        d_ptr->m_yToProperty.remove(yProp);
+        delete yProp;
+    }
+    d_ptr->m_propertyToY.remove(property);
+
+    QtProperty *zProp = d_ptr->m_propertyToZ[property];
+    if (zProp) {
+        d_ptr->m_zToProperty.remove(zProp);
+        delete zProp;
+    }
+    d_ptr->m_propertyToZ.remove(property);
+
+    d_ptr->m_values.remove(property);
+}
+
+class QtVector4DPropertyManagerPrivate
+{
+    QtVector4DPropertyManager *q_ptr;
+    Q_DECLARE_PUBLIC(QtVector4DPropertyManager)
+  public:
+    struct Data
+    {
+        QVector4D val{};
+        int decimals{2};
+    };
+
+    void slotDoubleChanged(QtProperty *property, double value);
+    void slotPropertyDestroyed(QtProperty *property);
+
+    typedef QMap<const QtProperty *, Data> PropertyValueMap;
+    PropertyValueMap m_values;
+
+    QtDoublePropertyManager *m_doublePropertyManager;
+
+    QMap<const QtProperty *, QtProperty *> m_propertyToX;
+    QMap<const QtProperty *, QtProperty *> m_propertyToY;
+    QMap<const QtProperty *, QtProperty *> m_propertyToZ;
+    QMap<const QtProperty *, QtProperty *> m_propertyToW;
+
+    QMap<const QtProperty *, QtProperty *> m_xToProperty;
+    QMap<const QtProperty *, QtProperty *> m_yToProperty;
+    QMap<const QtProperty *, QtProperty *> m_zToProperty;
+    QMap<const QtProperty *, QtProperty *> m_wToProperty;
+};
+
+void QtVector4DPropertyManagerPrivate::slotDoubleChanged(QtProperty *property, double value)
+{
+    if (QtProperty *prop = m_xToProperty.value(property, 0))
+    {
+        QVector4D p = m_values[prop].val;
+        p.setX(value);
+        q_ptr->setValue(prop, p);
+    }
+    else if (QtProperty *prop = m_yToProperty.value(property, 0))
+    {
+        QVector4D p = m_values[prop].val;
+        p.setY(value);
+        q_ptr->setValue(prop, p);
+    }
+    else if (QtProperty *prop = m_zToProperty.value(property, 0))
+    {
+        QVector4D p = m_values[prop].val;
+        p.setZ(value);
+        q_ptr->setValue(prop, p);
+    }
+    else if (QtProperty *prop = m_wToProperty.value(property, 0))
+    {
+        QVector4D p = m_values[prop].val;
+        p.setW(value);
+        q_ptr->setValue(prop, p);
+    }
+}
+
+void QtVector4DPropertyManagerPrivate::slotPropertyDestroyed(QtProperty *property)
+{
+    if (QtProperty *pointProp = m_xToProperty.value(property, 0))
+    {
+        m_propertyToX[pointProp] = 0;
+        m_xToProperty.remove(property);
+    }
+    else if (QtProperty *pointProp = m_yToProperty.value(property, 0))
+    {
+        m_propertyToY[pointProp] = 0;
+        m_yToProperty.remove(property);
+    }
+    else if (QtProperty *pointProp = m_zToProperty.value(property, 0))
+    {
+        m_propertyToZ[pointProp] = 0;
+        m_zToProperty.remove(property);
+    }
+    else if (QtProperty *pointProp = m_wToProperty.value(property, 0))
+    {
+        m_propertyToW[pointProp] = 0;
+        m_wToProperty.remove(property);
+    }
+}
+
+/*!
+    \class QtVector4DPropertyManager
+
+    \brief The QtVector4DPropertyManager provides and manages QVector4D properties. by smile_zyk
+
+    \sa QtAbstractPropertyManager
+*/
+
+QtVector4DPropertyManager::QtVector4DPropertyManager(QObject* parent): QtAbstractPropertyManager(parent), d_ptr(new QtVector4DPropertyManagerPrivate)
+{
+    d_ptr->q_ptr = this;
+
+    d_ptr->m_doublePropertyManager = new QtDoublePropertyManager(this);
+    connect(d_ptr->m_doublePropertyManager, SIGNAL(valueChanged(QtProperty*,double)),
+                this, SLOT(slotDoubleChanged(QtProperty*,double)));
+    connect(d_ptr->m_doublePropertyManager, SIGNAL(propertyDestroyed(QtProperty*)),
+                this, SLOT(slotPropertyDestroyed(QtProperty*)));
+}
+
+QtVector4DPropertyManager::~QtVector4DPropertyManager()
+{
+    clear();
+}
+
+QtDoublePropertyManager* QtVector4DPropertyManager::subDoublePropertyManager() const
+{
+    return d_ptr->m_doublePropertyManager;
+}
+
+QVector4D QtVector4DPropertyManager::value(const QtProperty* property) const
+{
+    return getValue<QVector4D>(d_ptr->m_values, property);
+}
+
+int QtVector4DPropertyManager::decimals(const QtProperty *property) const
+{
+    return getData<int>(d_ptr->m_values, &QtVector4DPropertyManagerPrivate::Data::decimals, property, 0);
+}
+
+void QtVector4DPropertyManager::setValue(QtProperty *property, const QVector4D &val)
+{
+    const QtVector4DPropertyManagerPrivate::PropertyValueMap::iterator it = d_ptr->m_values.find(property);
+    if (it == d_ptr->m_values.end())
+        return;
+
+    if (it.value().val == val)
+        return;
+
+    it.value().val = val;
+    d_ptr->m_doublePropertyManager->setValue(d_ptr->m_propertyToX[property], val.x());
+    d_ptr->m_doublePropertyManager->setValue(d_ptr->m_propertyToY[property], val.y());    
+    d_ptr->m_doublePropertyManager->setValue(d_ptr->m_propertyToZ[property], val.z());
+    d_ptr->m_doublePropertyManager->setValue(d_ptr->m_propertyToW[property], val.w());
+
+    emit propertyChanged(property);
+    emit valueChanged(property, val);
+}
+
+void QtVector4DPropertyManager::setDecimals(QtProperty *property, int prec)
+{
+    const QtVector4DPropertyManagerPrivate::PropertyValueMap::iterator it = d_ptr->m_values.find(property);
+    if (it == d_ptr->m_values.end())
+        return;
+
+    if (prec > 13)
+        prec = 13;
+    else if (prec < 0)
+        prec = 0;
+
+    if (it.value().decimals == prec)
+        return;
+
+    it.value().decimals = prec;
+    d_ptr->m_doublePropertyManager->setDecimals(d_ptr->m_propertyToX[property], prec);
+    d_ptr->m_doublePropertyManager->setDecimals(d_ptr->m_propertyToY[property], prec);
+    d_ptr->m_doublePropertyManager->setDecimals(d_ptr->m_propertyToZ[property], prec);
+    d_ptr->m_doublePropertyManager->setDecimals(d_ptr->m_propertyToW[property], prec);
+
+    emit decimalsChanged(property, it.value().decimals);
+}
+
+QString QtVector4DPropertyManager::valueText(const QtProperty *property) const
+{
+    const QtVector4DPropertyManagerPrivate::PropertyValueMap::const_iterator it = d_ptr->m_values.constFind(property);
+    if (it == d_ptr->m_values.constEnd())
+        return QString();
+    const QVector4D v = it.value().val;
+    const int dec =  it.value().decimals;
+    return tr("(%1, %2, %3, %4)").arg(QString::number(v.x(), 'f', dec))
+                         .arg(QString::number(v.y(), 'f', dec))
+                         .arg(QString::number(v.z(), 'f', dec))
+                         .arg(QString::number(v.w(), 'f', dec));
+}
+
+void QtVector4DPropertyManager::initializeProperty(QtProperty *property)
+{
+    d_ptr->m_values[property] = QtVector4DPropertyManagerPrivate::Data();
+
+    QtProperty *xProp = d_ptr->m_doublePropertyManager->addProperty();
+    xProp->setPropertyName(tr("X"));
+    d_ptr->m_doublePropertyManager->setDecimals(xProp, decimals(property));
+    d_ptr->m_doublePropertyManager->setValue(xProp, d_ptr->m_values[property].val.x());
+    d_ptr->m_propertyToX[property] = xProp;
+    d_ptr->m_xToProperty[xProp] = property;
+    property->addSubProperty(xProp);
+
+    QtProperty *yProp = d_ptr->m_doublePropertyManager->addProperty();
+    yProp->setPropertyName(tr("Y"));
+    d_ptr->m_doublePropertyManager->setDecimals(yProp, decimals(property));
+    d_ptr->m_doublePropertyManager->setValue(yProp, d_ptr->m_values[property].val.y());
+    d_ptr->m_propertyToY[property] = yProp;
+    d_ptr->m_yToProperty[yProp] = property;
+    property->addSubProperty(yProp);
+
+    QtProperty *zProp = d_ptr->m_doublePropertyManager->addProperty();
+    zProp->setPropertyName(tr("Z"));
+    d_ptr->m_doublePropertyManager->setDecimals(zProp, decimals(property));
+    d_ptr->m_doublePropertyManager->setValue(zProp, d_ptr->m_values[property].val.z());
+    d_ptr->m_propertyToZ[property] = zProp;
+    d_ptr->m_zToProperty[zProp] = property;
+    property->addSubProperty(zProp);
+
+    QtProperty *wProp = d_ptr->m_doublePropertyManager->addProperty();
+    wProp->setPropertyName(tr("W"));
+    d_ptr->m_doublePropertyManager->setDecimals(wProp, decimals(property));
+    d_ptr->m_doublePropertyManager->setValue(wProp, d_ptr->m_values[property].val.w());
+    d_ptr->m_propertyToW[property] = wProp;
+    d_ptr->m_wToProperty[wProp] = property;
+    property->addSubProperty(wProp);
+}
+
+void QtVector4DPropertyManager::uninitializeProperty(QtProperty *property)
+{
+    QtProperty *xProp = d_ptr->m_propertyToX[property];
+    if (xProp) {
+        d_ptr->m_xToProperty.remove(xProp);
+        delete xProp;
+    }
+    d_ptr->m_propertyToX.remove(property);
+
+    QtProperty *yProp = d_ptr->m_propertyToY[property];
+    if (yProp) {
+        d_ptr->m_yToProperty.remove(yProp);
+        delete yProp;
+    }
+    d_ptr->m_propertyToY.remove(property);
+
+    QtProperty *zProp = d_ptr->m_propertyToZ[property];
+    if (zProp) {
+        d_ptr->m_zToProperty.remove(zProp);
+        delete zProp;
+    }
+    d_ptr->m_propertyToZ.remove(property);
+
+    QtProperty *wProp = d_ptr->m_propertyToW[property];
+    if (wProp) {
+        d_ptr->m_wToProperty.remove(wProp);
+        delete wProp;
+    }
+    d_ptr->m_propertyToW.remove(property);
+
     d_ptr->m_values.remove(property);
 }
 

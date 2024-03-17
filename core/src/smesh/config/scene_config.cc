@@ -12,6 +12,11 @@ namespace smesh
         return &def;
     }
 
+    QString SceneConfigDef::ConfigDefName() const
+    {
+        return "SceneConfigDef";
+    }
+
     SceneConfigDef::SceneConfigDef()
     {
         auto grid_def = AddProperty("Grid", QtVariantPropertyManager::flagTypeId());
@@ -24,8 +29,8 @@ namespace smesh
         back_def->set_tool_tip("backgroud color");
     }
 
-    SceneConfig SceneConfig::Create()
+    std::unique_ptr<SceneConfig> SceneConfig::CreateUnique()
     {
-        return SceneConfig(SceneConfigDef::Instance());
+        return std::make_unique<SceneConfig>(SceneConfigDef::Instance());
     }
 }

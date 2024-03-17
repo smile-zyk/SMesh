@@ -10,6 +10,7 @@ namespace smesh {
     {
        public:
         static const SceneConfigDef* Instance();
+        QString ConfigDefName() const override;
        private:
          SceneConfigDef();
     };
@@ -17,7 +18,7 @@ namespace smesh {
     class SMESH_API SceneConfig : public Config
     {
         public:
-         static SceneConfig Create();
+         static std::unique_ptr<SceneConfig> CreateUnique();
         public:
          SceneConfig(const SceneConfigDef* def): Config(def){}
     };
