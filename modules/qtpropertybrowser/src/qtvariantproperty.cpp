@@ -43,6 +43,8 @@
 #include "qteditorfactory.h"
 #include <QtCore/QVariant>
 #include <QtGui/QIcon>
+#include <QtGui/QVector3D>
+#include <QtGui/QVector4D>
 #include <QtCore/QDate>
 #include <QtCore/QLocale>
 
@@ -296,6 +298,8 @@ public:
     void slotRangeChanged(QtProperty *property, double min, double max);
     void slotSingleStepChanged(QtProperty *property, double step);
     void slotDecimalsChanged(QtProperty *property, int prec);
+    void slotPrefixChanged(QtProperty *property, const QString& prefix);
+    void slotSuffixChanged(QtProperty *property, const QString& suffix);
     void slotValueChanged(QtProperty *property, bool val);
     void slotValueChanged(QtProperty *property, const QString &val);
     void slotRegExpChanged(QtProperty *property, const QRegExp &regExp);
@@ -323,6 +327,8 @@ public:
     void slotValueChanged(QtProperty *property, const QSizePolicy &val);
     void slotValueChanged(QtProperty *property, const QFont &val);
     void slotValueChanged(QtProperty *property, const QCursor &val);
+    void slotValueChanged(QtProperty *property, const QVector3D &val);
+    void slotValueChanged(QtProperty *property, const QVector4D &val);
     void slotFlagChanged(QtProperty *property, int val);
     void slotFlagNamesChanged(QtProperty *property, const QStringList &flagNames);
     void slotPropertyInserted(QtProperty *property, QtProperty *parent, QtProperty *after);
@@ -348,6 +354,8 @@ public:
     const QString m_constraintAttribute;
     const QString m_singleStepAttribute;
     const QString m_decimalsAttribute;
+    const QString m_prefixAttribute;
+    const QString m_suffixAttribute;
     const QString m_enumIconsAttribute;
     const QString m_enumNamesAttribute;
     const QString m_flagNamesAttribute;
@@ -360,6 +368,8 @@ QtVariantPropertyManagerPrivate::QtVariantPropertyManagerPrivate() :
     m_constraintAttribute(QLatin1String("constraint")),
     m_singleStepAttribute(QLatin1String("singleStep")),
     m_decimalsAttribute(QLatin1String("decimals")),
+    m_prefixAttribute(QLatin1String("prefix")),
+    m_suffixAttribute(QLatin1String("suffix")),
     m_enumIconsAttribute(QLatin1String("enumIcons")),
     m_enumNamesAttribute(QLatin1String("enumNames")),
     m_flagNamesAttribute(QLatin1String("flagNames")),
@@ -505,6 +515,18 @@ void QtVariantPropertyManagerPrivate::slotDecimalsChanged(QtProperty *property, 
         emit q_ptr->attributeChanged(varProp, m_decimalsAttribute, QVariant(prec));
 }
 
+void QtVariantPropertyManagerPrivate::slotPrefixChanged(QtProperty *property, const QString& prefix)
+{
+    if (QtVariantProperty *varProp = m_internalToProperty.value(property, 0))
+        emit q_ptr->attributeChanged(varProp, m_prefixAttribute, QVariant(prefix));
+}
+
+void QtVariantPropertyManagerPrivate::slotSuffixChanged(QtProperty *property, const QString& suffix)
+{
+    if (QtVariantProperty *varProp = m_internalToProperty.value(property, 0))
+        emit q_ptr->attributeChanged(varProp, m_suffixAttribute, QVariant(suffix));
+}
+
 void QtVariantPropertyManagerPrivate::slotValueChanged(QtProperty *property, bool val)
 {
     valueChanged(property, QVariant(val));
@@ -569,6 +591,16 @@ void QtVariantPropertyManagerPrivate::slotValueChanged(QtProperty *property, con
 void QtVariantPropertyManagerPrivate::slotValueChanged(QtProperty *property, const QPointF &val)
 {
     valueChanged(property, QVariant(val));
+}
+
+void QtVariantPropertyManagerPrivate::slotValueChanged(QtProperty *property, const QVector3D &val)
+{
+    valueChanged(property, QVariant::fromValue<QVector3D>(val));
+}
+
+void QtVariantPropertyManagerPrivate::slotValueChanged(QtProperty *property, const QVector4D &val)
+{
+    valueChanged(property, QVariant::fromValue<QVector4D>(val));
 }
 
 void QtVariantPropertyManagerPrivate::slotValueChanged(QtProperty *property, const QSize &val)
@@ -736,6 +768,12 @@ void QtVariantPropertyManagerPrivate::slotFlagNamesChanged(QtProperty *property,
         \li QPointF
         \li QVariant::PointF
     \row
+        \li QVector3D
+        \li QVariant::Vector3D
+    \row
+        \li QVector4D
+        \li QVariant::Vector4D
+    \row
         \li QSize
         \li QVariant::Size
     \row
@@ -821,6 +859,14 @@ void QtVariantPropertyManagerPrivate::slotFlagNamesChanged(QtProperty *property,
         \li QVariant::Date
     \row
         \li QPointF
+        \li decimals
+        \li QVariant::Int
+    \row
+        \li QVector3d
+        \li decimals
+        \li QVariant::Int
+    \row
+        \li QVector4d
         \li decimals
         \li QVariant::Int
     \row
@@ -923,6 +969,10 @@ QtVariantPropertyManager::QtVariantPropertyManager(QObject *parent)
     d_ptr->m_typeToAttributeToAttributeType[QVariant::Int][d_ptr->m_minimumAttribute] = QVariant::Int;
     d_ptr->m_typeToAttributeToAttributeType[QVariant::Int][d_ptr->m_maximumAttribute] = QVariant::Int;
     d_ptr->m_typeToAttributeToAttributeType[QVariant::Int][d_ptr->m_singleStepAttribute] = QVariant::Int;
+    d_ptr->m_typeToAttributeToAttributeType[QVariant::Int][d_ptr->m_prefixAttribute] =
+            QVariant::String;
+    d_ptr->m_typeToAttributeToAttributeType[QVariant::Int][d_ptr->m_suffixAttribute] =
+            QVariant::String;
     d_ptr->m_typeToValueType[QVariant::Int] = QVariant::Int;
     connect(intPropertyManager, SIGNAL(valueChanged(QtProperty*,int)),
                 this, SLOT(slotValueChanged(QtProperty*,int)));
@@ -930,6 +980,11 @@ QtVariantPropertyManager::QtVariantPropertyManager(QObject *parent)
                 this, SLOT(slotRangeChanged(QtProperty*,int,int)));
     connect(intPropertyManager, SIGNAL(singleStepChanged(QtProperty*,int)),
                 this, SLOT(slotSingleStepChanged(QtProperty*,int)));
+    connect(intPropertyManager, SIGNAL(prefixChanged(QtProperty*,const QString&)),
+                this, SLOT(slotPrefixChanged(QtProperty*,const QString&)));
+    connect(intPropertyManager, SIGNAL(suffixChanged(QtProperty*,const QString&)),
+                this, SLOT(slotSuffixChanged(QtProperty*,const QString&)));
+    
     // DoublePropertyManager
     QtDoublePropertyManager *doublePropertyManager = new QtDoublePropertyManager(this);
     d_ptr->m_typeToPropertyManager[QVariant::Double] = doublePropertyManager;
@@ -941,6 +996,10 @@ QtVariantPropertyManager::QtVariantPropertyManager(QObject *parent)
             QVariant::Double;
     d_ptr->m_typeToAttributeToAttributeType[QVariant::Double][d_ptr->m_decimalsAttribute] =
             QVariant::Int;
+    d_ptr->m_typeToAttributeToAttributeType[QVariant::Double][d_ptr->m_prefixAttribute] =
+            QVariant::String;
+    d_ptr->m_typeToAttributeToAttributeType[QVariant::Double][d_ptr->m_suffixAttribute] =
+            QVariant::String;
     d_ptr->m_typeToValueType[QVariant::Double] = QVariant::Double;
     connect(doublePropertyManager, SIGNAL(valueChanged(QtProperty*,double)),
                 this, SLOT(slotValueChanged(QtProperty*,double)));
@@ -950,6 +1009,10 @@ QtVariantPropertyManager::QtVariantPropertyManager(QObject *parent)
                 this, SLOT(slotSingleStepChanged(QtProperty*,double)));
     connect(doublePropertyManager, SIGNAL(decimalsChanged(QtProperty*,int)),
                 this, SLOT(slotDecimalsChanged(QtProperty*,int)));
+    connect(doublePropertyManager, SIGNAL(prefixChanged(QtProperty*,const QString&)),
+                this, SLOT(slotPrefixChanged(QtProperty*,const QString&)));
+    connect(doublePropertyManager, SIGNAL(suffixChanged(QtProperty*,const QString&)),
+                this, SLOT(slotSuffixChanged(QtProperty*,const QString&)));
     // BoolPropertyManager
     QtBoolPropertyManager *boolPropertyManager = new QtBoolPropertyManager(this);
     d_ptr->m_typeToPropertyManager[QVariant::Bool] = boolPropertyManager;
@@ -1042,6 +1105,39 @@ QtVariantPropertyManager::QtVariantPropertyManager(QObject *parent)
                 this, SLOT(slotPropertyInserted(QtProperty*,QtProperty*,QtProperty*)));
     connect(pointFPropertyManager, SIGNAL(propertyRemoved(QtProperty*,QtProperty*)),
                 this, SLOT(slotPropertyRemoved(QtProperty*,QtProperty*)));
+
+    // Vector3DPropertyManager
+    QtVector3DPropertyManager *vector3DPropertyManager = new QtVector3DPropertyManager(this);
+    d_ptr->m_typeToPropertyManager[QVariant::Vector3D] = vector3DPropertyManager;
+    d_ptr->m_typeToValueType[QVariant::Vector3D] = QVariant::Vector3D;
+    d_ptr->m_typeToAttributeToAttributeType[QVariant::Vector3D][d_ptr->m_decimalsAttribute] = QVariant::Int;
+    connect(vector3DPropertyManager, SIGNAL(valueChanged(QtProperty*,QVector3D)),
+                this, SLOT(slotValueChanged(QtProperty*,QVector3D)));
+    connect(vector3DPropertyManager, SIGNAL(decimalsChanged(QtProperty*,int)),
+                this, SLOT(slotDecimalsChanged(QtProperty*,int)));
+    connect(vector3DPropertyManager->subDoublePropertyManager(), SIGNAL(valueChanged(QtProperty*,double)),
+                this, SLOT(slotValueChanged(QtProperty*,double)));
+    connect(vector3DPropertyManager, SIGNAL(propertyInserted(QtProperty*,QtProperty*,QtProperty*)),
+                this, SLOT(slotPropertyInserted(QtProperty*,QtProperty*,QtProperty*)));
+    connect(vector3DPropertyManager, SIGNAL(propertyRemoved(QtProperty*,QtProperty*)),
+                this, SLOT(slotPropertyRemoved(QtProperty*,QtProperty*)));
+
+    // Vector4DPropertyManager
+    QtVector4DPropertyManager *vector4DPropertyManager = new QtVector4DPropertyManager(this);
+    d_ptr->m_typeToPropertyManager[QVariant::Vector4D] = vector4DPropertyManager;
+    d_ptr->m_typeToValueType[QVariant::Vector4D] = QVariant::Vector4D;
+    d_ptr->m_typeToAttributeToAttributeType[QVariant::Vector4D][d_ptr->m_decimalsAttribute] = QVariant::Int;
+    connect(vector4DPropertyManager, SIGNAL(valueChanged(QtProperty*,QVector4D)),
+                this, SLOT(slotValueChanged(QtProperty*,QVector4D)));
+    connect(vector4DPropertyManager, SIGNAL(decimalsChanged(QtProperty*,int)),
+                this, SLOT(slotDecimalsChanged(QtProperty*,int)));
+    connect(vector4DPropertyManager->subDoublePropertyManager(), SIGNAL(valueChanged(QtProperty*,double)),
+                this, SLOT(slotValueChanged(QtProperty*,double)));
+    connect(vector4DPropertyManager, SIGNAL(propertyInserted(QtProperty*,QtProperty*,QtProperty*)),
+                this, SLOT(slotPropertyInserted(QtProperty*,QtProperty*,QtProperty*)));
+    connect(vector4DPropertyManager, SIGNAL(propertyRemoved(QtProperty*,QtProperty*)),
+                this, SLOT(slotPropertyRemoved(QtProperty*,QtProperty*)));
+
     // SizePropertyManager
     QtSizePropertyManager *sizePropertyManager = new QtSizePropertyManager(this);
     d_ptr->m_typeToPropertyManager[QVariant::Size] = sizePropertyManager;
@@ -1331,6 +1427,10 @@ QVariant QtVariantPropertyManager::value(const QtProperty *property) const
         return pointManager->value(internProp);
     } else if (QtPointFPropertyManager *pointFManager = qobject_cast<QtPointFPropertyManager *>(manager)) {
         return pointFManager->value(internProp);
+    } else if (QtVector3DPropertyManager *vector3DManager = qobject_cast<QtVector3DPropertyManager *>(manager)){
+        return vector3DManager->value(internProp);
+    } else if (QtVector4DPropertyManager *vector4DManager = qobject_cast<QtVector4DPropertyManager *>(manager)){
+        return vector4DManager->value(internProp);
     } else if (QtSizePropertyManager *sizeManager = qobject_cast<QtSizePropertyManager *>(manager)) {
         return sizeManager->value(internProp);
     } else if (QtSizeFPropertyManager *sizeFManager = qobject_cast<QtSizeFPropertyManager *>(manager)) {
@@ -1432,6 +1532,10 @@ QVariant QtVariantPropertyManager::attributeValue(const QtProperty *property, co
             return intManager->minimum(internProp);
         if (attribute == d_ptr->m_singleStepAttribute)
             return intManager->singleStep(internProp);
+        if (attribute == d_ptr->m_prefixAttribute)
+            return intManager->prefix(internProp);
+        if (attribute == d_ptr->m_suffixAttribute)
+            return intManager->suffix(internProp);
         return QVariant();
     } else if (QtDoublePropertyManager *doubleManager = qobject_cast<QtDoublePropertyManager *>(manager)) {
         if (attribute == d_ptr->m_maximumAttribute)
@@ -1442,6 +1546,10 @@ QVariant QtVariantPropertyManager::attributeValue(const QtProperty *property, co
             return doubleManager->singleStep(internProp);
         if (attribute == d_ptr->m_decimalsAttribute)
             return doubleManager->decimals(internProp);
+        if (attribute == d_ptr->m_prefixAttribute)
+            return doubleManager->prefix(internProp);
+        if (attribute == d_ptr->m_suffixAttribute)
+            return doubleManager->suffix(internProp);
         return QVariant();
     } else if (QtStringPropertyManager *stringManager = qobject_cast<QtStringPropertyManager *>(manager)) {
         if (attribute == d_ptr->m_regExpAttribute)
@@ -1456,6 +1564,14 @@ QVariant QtVariantPropertyManager::attributeValue(const QtProperty *property, co
     } else if (QtPointFPropertyManager *pointFManager = qobject_cast<QtPointFPropertyManager *>(manager)) {
         if (attribute == d_ptr->m_decimalsAttribute)
             return pointFManager->decimals(internProp);
+        return QVariant();
+    } else if (QtVector3DPropertyManager *vector3DManager = qobject_cast<QtVector3DPropertyManager *>(manager)) {
+        if (attribute == d_ptr->m_decimalsAttribute)
+            return vector3DManager->decimals(internProp);
+        return QVariant();
+    } else if (QtVector4DPropertyManager *Vector4DManager = qobject_cast<QtVector4DPropertyManager *>(manager)) {
+        if (attribute == d_ptr->m_decimalsAttribute)
+            return Vector4DManager->decimals(internProp);
         return QVariant();
     } else if (QtSizePropertyManager *sizeManager = qobject_cast<QtSizePropertyManager *>(manager)) {
         if (attribute == d_ptr->m_maximumAttribute)
@@ -1601,6 +1717,12 @@ void QtVariantPropertyManager::setValue(QtProperty *property, const QVariant &va
     } else if (QtPointFPropertyManager *pointFManager = qobject_cast<QtPointFPropertyManager *>(manager)) {
         pointFManager->setValue(internProp, qvariant_cast<QPointF>(val));
         return;
+    } else if (QtVector3DPropertyManager *vector3DManager = qobject_cast<QtVector3DPropertyManager *>(manager)) {
+        vector3DManager->setValue(internProp, qvariant_cast<QVector3D>(val));
+        return;
+    } else if (QtVector4DPropertyManager *vector4DManager = qobject_cast<QtVector4DPropertyManager *>(manager)) {
+        vector4DManager->setValue(internProp, qvariant_cast<QVector4D>(val));
+        return;
     } else if (QtSizePropertyManager *sizeManager = qobject_cast<QtSizePropertyManager *>(manager)) {
         sizeManager->setValue(internProp, qvariant_cast<QSize>(val));
         return;
@@ -1671,10 +1793,14 @@ void QtVariantPropertyManager::setAttribute(QtProperty *property,
     if (QtIntPropertyManager *intManager = qobject_cast<QtIntPropertyManager *>(manager)) {
         if (attribute == d_ptr->m_maximumAttribute)
             intManager->setMaximum(internProp, qvariant_cast<int>(value));
-        else if (attribute == d_ptr->m_minimumAttribute)
+        if (attribute == d_ptr->m_minimumAttribute)
             intManager->setMinimum(internProp, qvariant_cast<int>(value));
-        else if (attribute == d_ptr->m_singleStepAttribute)
+        if (attribute == d_ptr->m_singleStepAttribute)
             intManager->setSingleStep(internProp, qvariant_cast<int>(value));
+        if (attribute == d_ptr->m_prefixAttribute)
+            intManager->setPrefix(internProp, qvariant_cast<QString>(value));
+        if (attribute == d_ptr->m_suffixAttribute)
+            intManager->setSuffix(internProp, qvariant_cast<QString>(value));
         return;
     } else if (QtDoublePropertyManager *doubleManager = qobject_cast<QtDoublePropertyManager *>(manager)) {
         if (attribute == d_ptr->m_maximumAttribute)
@@ -1685,6 +1811,10 @@ void QtVariantPropertyManager::setAttribute(QtProperty *property,
             doubleManager->setSingleStep(internProp, qvariant_cast<double>(value));
         if (attribute == d_ptr->m_decimalsAttribute)
             doubleManager->setDecimals(internProp, qvariant_cast<int>(value));
+        if (attribute == d_ptr->m_prefixAttribute)
+            doubleManager->setPrefix(internProp, qvariant_cast<QString>(value));
+        if (attribute == d_ptr->m_suffixAttribute)
+            doubleManager->setSuffix(internProp, qvariant_cast<QString>(value));
         return;
     } else if (QtStringPropertyManager *stringManager = qobject_cast<QtStringPropertyManager *>(manager)) {
         if (attribute == d_ptr->m_regExpAttribute)
@@ -1699,6 +1829,14 @@ void QtVariantPropertyManager::setAttribute(QtProperty *property,
     } else if (QtPointFPropertyManager *pointFManager = qobject_cast<QtPointFPropertyManager *>(manager)) {
         if (attribute == d_ptr->m_decimalsAttribute)
             pointFManager->setDecimals(internProp, qvariant_cast<int>(value));
+        return;
+    } else if (QtVector3DPropertyManager *vector3DManager = qobject_cast<QtVector3DPropertyManager *>(manager)) {
+        if (attribute == d_ptr->m_decimalsAttribute)
+            vector3DManager->setDecimals(internProp, qvariant_cast<int>(value));
+        return;
+    } else if (QtVector4DPropertyManager *vector4DManager = qobject_cast<QtVector4DPropertyManager *>(manager)) {
+        if (attribute == d_ptr->m_decimalsAttribute)
+            vector4DManager->setDecimals(internProp, qvariant_cast<int>(value));
         return;
     } else if (QtSizePropertyManager *sizeManager = qobject_cast<QtSizePropertyManager *>(manager)) {
         if (attribute == d_ptr->m_maximumAttribute)
@@ -2042,6 +2180,14 @@ void QtVariantEditorFactory::connectPropertyManager(QtVariantPropertyManager *ma
     for (QtPointFPropertyManager *manager : pointFPropertyManagers)
         d_ptr->m_doubleSpinBoxFactory->addPropertyManager(manager->subDoublePropertyManager());
 
+    const auto vector3DPropertyManagers = manager->findChildren<QtVector3DPropertyManager *>();
+    for (QtVector3DPropertyManager *manager : vector3DPropertyManagers)
+        d_ptr->m_doubleSpinBoxFactory->addPropertyManager(manager->subDoublePropertyManager());
+
+    const auto vector4DPropertyManagers = manager->findChildren<QtVector4DPropertyManager *>();
+    for (QtVector4DPropertyManager *manager : vector4DPropertyManagers)
+        d_ptr->m_doubleSpinBoxFactory->addPropertyManager(manager->subDoublePropertyManager());
+
     const auto sizePropertyManagers = manager->findChildren<QtSizePropertyManager *>();
     for (QtSizePropertyManager *manager : sizePropertyManagers)
         d_ptr->m_spinBoxFactory->addPropertyManager(manager->subIntPropertyManager());
@@ -2159,6 +2305,14 @@ void QtVariantEditorFactory::disconnectPropertyManager(QtVariantPropertyManager 
 
     const auto pointFPropertyManagers = manager->findChildren<QtPointFPropertyManager *>();
     for (QtPointFPropertyManager *manager : pointFPropertyManagers)
+        d_ptr->m_doubleSpinBoxFactory->removePropertyManager(manager->subDoublePropertyManager());
+
+    const auto vector3DPropertyManagers = manager->findChildren<QtVector3DPropertyManager *>();
+    for (QtVector3DPropertyManager *manager : vector3DPropertyManagers)
+        d_ptr->m_doubleSpinBoxFactory->removePropertyManager(manager->subDoublePropertyManager());
+
+    const auto vector4DPropertyManagers = manager->findChildren<QtVector4DPropertyManager *>();
+    for (QtVector4DPropertyManager *manager : vector4DPropertyManagers)
         d_ptr->m_doubleSpinBoxFactory->removePropertyManager(manager->subDoublePropertyManager());
 
     const auto sizePropertyManagers = manager->findChildren<QtSizePropertyManager *>();

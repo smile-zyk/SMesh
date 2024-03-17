@@ -53,6 +53,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
             ui->tabWidget->setTabVisible(1, false);
         }
         ui->render_widget->renderer()->set_selected_object_idx({idx.row()});
+        ui->object_settings->set_config(ui->render_widget->renderer()->object(idx.row())->config());
         // auto config = ui->render_widget->renderer()->object(idx.row())->config();
         // ui->object_settings->set_config(config);
     });

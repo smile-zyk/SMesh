@@ -77,6 +77,8 @@ public:
     int minimum(const QtProperty *property) const;
     int maximum(const QtProperty *property) const;
     int singleStep(const QtProperty *property) const;
+    QString prefix(const QtProperty* property) const;
+    QString suffix(const QtProperty* property) const;
 
 public Q_SLOTS:
     void setValue(QtProperty *property, int val);
@@ -84,10 +86,16 @@ public Q_SLOTS:
     void setMaximum(QtProperty *property, int maxVal);
     void setRange(QtProperty *property, int minVal, int maxVal);
     void setSingleStep(QtProperty *property, int step);
+    void setPrefix(QtProperty* property, const QString& prefix);
+    void setSuffix(QtProperty* property, const QString& suffix);
+
 Q_SIGNALS:
     void valueChanged(QtProperty *property, int val);
     void rangeChanged(QtProperty *property, int minVal, int maxVal);
     void singleStepChanged(QtProperty *property, int step);
+    void prefixChanged(QtProperty *property, const QString& prefix);
+    void suffixChanged(QtProperty *property, const QString& suffix);
+    
 protected:
     QString valueText(const QtProperty *property) const;
     virtual void initializeProperty(QtProperty *property);
@@ -138,6 +146,8 @@ public:
     double maximum(const QtProperty *property) const;
     double singleStep(const QtProperty *property) const;
     int decimals(const QtProperty *property) const;
+    QString prefix(const QtProperty* property) const;
+    QString suffix(const QtProperty* property) const;
 
 public Q_SLOTS:
     void setValue(QtProperty *property, double val);
@@ -146,11 +156,15 @@ public Q_SLOTS:
     void setRange(QtProperty *property, double minVal, double maxVal);
     void setSingleStep(QtProperty *property, double step);
     void setDecimals(QtProperty *property, int prec);
+    void setPrefix(QtProperty* property, const QString& prefix);
+    void setSuffix(QtProperty* property, const QString& suffix);
 Q_SIGNALS:
     void valueChanged(QtProperty *property, double val);
     void rangeChanged(QtProperty *property, double minVal, double maxVal);
     void singleStepChanged(QtProperty *property, double step);
     void decimalsChanged(QtProperty *property, int prec);
+    void prefixChanged(QtProperty *property, const QString& prefix);
+    void suffixChanged(QtProperty *property, const QString& suffix);
 protected:
     QString valueText(const QtProperty *property) const;
     virtual void initializeProperty(QtProperty *property);
@@ -738,6 +752,74 @@ private:
     QScopedPointer<QtCursorPropertyManagerPrivate> d_ptr;
     Q_DECLARE_PRIVATE(QtCursorPropertyManager)
     Q_DISABLE_COPY_MOVE(QtCursorPropertyManager)
+};
+
+class QtVector3DPropertyManagerPrivate;
+
+class QtVector3DPropertyManager : public QtAbstractPropertyManager
+{
+    Q_OBJECT
+  public:
+    QtVector3DPropertyManager(QObject *parent = nullptr);
+    ~QtVector3DPropertyManager();
+
+    QtDoublePropertyManager *subDoublePropertyManager() const;
+
+    QVector3D value(const QtProperty *property) const;
+    int decimals(const QtProperty *property) const;
+
+    void setValue(QtProperty *property, const QVector3D &val);
+    void setDecimals(QtProperty *property, int prec);
+
+  signals:
+    void valueChanged(QtProperty *property, const QVector3D &val);
+    void decimalsChanged(QtProperty *property, int prec);
+
+  protected:
+    QString valueText(const QtProperty *property) const;
+    virtual void initializeProperty(QtProperty *property);
+    virtual void uninitializeProperty(QtProperty *property);
+
+  private:
+    QScopedPointer<QtVector3DPropertyManagerPrivate> d_ptr;
+    Q_PRIVATE_SLOT(d_func(), void slotDoubleChanged(QtProperty *, double))
+    Q_PRIVATE_SLOT(d_func(), void slotPropertyDestroyed(QtProperty *))
+    Q_DECLARE_PRIVATE(QtVector3DPropertyManager)
+    Q_DISABLE_COPY_MOVE(QtVector3DPropertyManager)
+};
+
+class QtVector4DPropertyManagerPrivate;
+
+class QtVector4DPropertyManager : public QtAbstractPropertyManager
+{
+    Q_OBJECT
+  public:
+    QtVector4DPropertyManager(QObject *parent = nullptr);
+    ~QtVector4DPropertyManager();
+
+    QtDoublePropertyManager *subDoublePropertyManager() const;
+
+    QVector4D value(const QtProperty *property) const;
+    int decimals(const QtProperty *property) const;
+
+    void setValue(QtProperty *property, const QVector4D &val);
+    void setDecimals(QtProperty *property, int prec);
+
+  signals:
+    void valueChanged(QtProperty *property, const QVector4D &val);
+    void decimalsChanged(QtProperty *property, int prec);
+
+  protected:
+    QString valueText(const QtProperty *property) const;
+    virtual void initializeProperty(QtProperty *property);
+    virtual void uninitializeProperty(QtProperty *property);
+
+  private:
+    QScopedPointer<QtVector4DPropertyManagerPrivate> d_ptr;
+    Q_PRIVATE_SLOT(d_func(), void slotDoubleChanged(QtProperty *, double))
+    Q_PRIVATE_SLOT(d_func(), void slotPropertyDestroyed(QtProperty *))
+    Q_DECLARE_PRIVATE(QtVector4DPropertyManager)
+    Q_DISABLE_COPY_MOVE(QtVector4DPropertyManager)
 };
 
 QT_END_NAMESPACE

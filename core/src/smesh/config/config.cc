@@ -8,7 +8,7 @@ namespace smesh
     {
     }
 
-    PropertyDef* PropertyDef::AddSubProperty(const PropertyKey& key, QVariant::Type type)
+    PropertyDef* PropertyDef::AddSubProperty(const PropertyKey& key, int type)
     {
         if(type == QVariant::Type::Invalid) return nullptr;
         if(sub_property_def_map_.contains(key) == true) return nullptr;
@@ -182,7 +182,12 @@ namespace smesh
         }
         return res;
     }
-    
+
+    QString ConfigDef::ConfigDefName() const
+    {
+        return "ConfigDef";
+    }
+
     bool Config::IsEqual(const Config& other) const
     {
         return diff_keys(other).isEmpty();
@@ -219,6 +224,7 @@ namespace smesh
         if(IsKeyValid(key))
         {
             config_map_[key] = value;
+            emit propertyChanged(key, value);
             return true;
         }
         else
