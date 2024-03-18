@@ -16,11 +16,16 @@ namespace smesh {
          ModelObjectConfigDef();
     };
 
+    class ModelObject;
+
     class SMESH_API ModelObjectConfig : public Config
     {
         public:
-         static std::unique_ptr<ModelObjectConfig> CreateUnique();
+         static std::unique_ptr<ModelObjectConfig> CreateUnique(ModelObject* object);
         public:
-         ModelObjectConfig(const ModelObjectConfigDef* def): Config(def){}
+         ModelObjectConfig(const ModelObjectConfigDef* def, ModelObject* object): Config(def){ object_ = object; }
+         ModelObject* object() { return object_; }
+        private:
+         ModelObject* object_;
     };
 }

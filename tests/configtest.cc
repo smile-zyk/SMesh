@@ -1,5 +1,4 @@
 #include "gtest/gtest.h"
-#include "smesh/config/object_config.h"
 #include "smesh/config/config.h"
 #include <QtVariantPropertyManager>
 #include <QVector3D>
@@ -35,38 +34,5 @@ TEST(PropertyDef, SetValue)
   EXPECT_TRUE(def.attribute_value("tooltip").toString() == "test_tool_tip");
 }
 
-TEST(PropertyDef, SubPropertyDef)
-{
-  // def1
-  // - "test1": def0
-  //    - "test1": sub_0
-  smesh::PropertyDef def0(QVariant::Int);
-  smesh::PropertyDef def1(QVariant::Double);
-  
-  auto sub_0 = def0.AddSubProperty("test1", QVariant::Int);
-  ASSERT_TRUE(sub_0 != nullptr);
-
-  sub_0->set_default_value(15);
-  EXPECT_TRUE(sub_0->default_value().toInt() == def0.sub_property_def("test1")->default_value().toInt());
-  EXPECT_TRUE(def0.sub_property_def("test1")->default_value().toInt() == 15);
-
-  bool res_0 = def0.AddSubProperty("test1", def1);
-  EXPECT_FALSE(res_0);
-
-  def0.set_default_value(11);
-  bool res_1 = def1.AddSubProperty("test1", def0);
-  EXPECT_TRUE(res_1);
-  def0.set_default_value(10);
-  EXPECT_TRUE(def1.sub_property_def("test1")->default_value().toInt() == 11);
-  EXPECT_TRUE(def0.default_value().toInt() == 10);
-
-  EXPECT_TRUE(def1.sub_property_def("test1/test1")->default_value().toInt() == 15);
-  EXPECT_TRUE(def1.sub_property_def("test1")->sub_property_def("test1")->default_value().toInt() == 15);
-  EXPECT_EQ(def1.sub_property_def("test1")->sub_property_def("test1"), def1.sub_property_def("test1/test1"));
-  EXPECT_TRUE(def0.sub_property_def("test1")->default_value().toInt() == 15);
-  EXPECT_TRUE(def1.sub_keys() == QStringList{"test1"});
-  EXPECT_TRUE(def1.IsSubKeyValid("test1"));
-  EXPECT_TRUE(def1.IsSubKeyValid("test1/test1"));
-}
 
 

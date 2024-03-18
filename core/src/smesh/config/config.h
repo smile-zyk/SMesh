@@ -29,9 +29,8 @@ namespace smesh
       public:
         // for QHash initialize
         PropertyDef();
-        explicit PropertyDef(PropertyType type) : type_(type) {}
+        explicit PropertyDef(PropertyType type);
         PropertyDef *AddSubProperty(const PropertyKey &key, int type);
-        bool AddSubProperty(const PropertyKey &key, const PropertyDef &def);
         bool IsValid() { return type_ != QVariant::Type::Invalid; }
         bool IsSubKeyValid(const PropertyKey &key) const;
         PropertyType type() const { return type_; }
@@ -76,8 +75,8 @@ namespace smesh
       protected:
         ConfigDef() {}
         PropertyDef *AddProperty(const PropertyKey &key, int type);
-        bool AddProperty(const PropertyKey &key, PropertyDef def);
     };
+
 
     class SMESH_API Config : public QObject
     {
@@ -92,17 +91,19 @@ namespace smesh
         const PropertyDef *property_def(const PropertyKey &key) const { return def_->property_def(key); }
         const ConfigDef* def() const { return def_; }
         QVariant property(const PropertyKey &key) const;
-        bool set_property(const PropertyKey &key, QVariant value);
+        bool set_property(const PropertyKey &key, QVariant value, bool is_triggered = false);
         // bool WriteConfig(const QString &file_path) const;
         // bool ReadConfig(const QString &file_path) const;
 
       signals:
         void propertyChanged(const PropertyKey& key, QVariant value);
+        void triggeredPropertyChanged(const PropertyKey& key, QVariant value);
 
       private:
         // Config can't modify def
         const ConfigDef *def_;
         mutable PropertyMap config_map_;
+
       protected:
         Config(const ConfigDef *def) : def_(def) {}
     };
