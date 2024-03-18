@@ -20,22 +20,67 @@ namespace smesh
     ModelObjectConfigDef::ModelObjectConfigDef()
     {
         auto transform_def = AddProperty("Transform", QtVariantPropertyManager::groupTypeId());
-        auto translate_def = transform_def->AddSubProperty("Translate", QVariant::Vector3D);
-        translate_def->set_tool_tip("translate");
+
+        auto translate_def = transform_def->AddSubProperty("Translate", QtVariantPropertyManager::groupTypeId());
+        translate_def->set_tool_tip("Translate");
+
+        auto translate_x_def = translate_def->AddSubProperty("X", QVariant::Double);
+        translate_x_def->set_tool_tip("Translate X");
+        translate_x_def->set_attribute_value("singleStep", 0.1);
+        translate_x_def->set_attribute_value("suffix", " m");
+        auto translate_y_def = translate_def->AddSubProperty("Y", QVariant::Double);
+        translate_y_def->set_tool_tip("Translate Y");
+        translate_y_def->set_attribute_value("singleStep", 0.1);
+        translate_y_def->set_attribute_value("suffix", " m");
+        auto translate_z_def = translate_def->AddSubProperty("Z", QVariant::Double);
+        translate_z_def->set_tool_tip("Translate Z");
+        translate_z_def->set_attribute_value("singleStep", 0.1);
+        translate_z_def->set_attribute_value("suffix", " m");
+
         auto rotate_def = transform_def->AddSubProperty("Rotate", QtVariantPropertyManager::groupTypeId());
-        rotate_def->set_tool_tip("rotate");
+        rotate_def->set_tool_tip("Rotate");
+
+        auto rotate_w_def = rotate_def->AddSubProperty("W", QVariant::Double);
+        rotate_w_def->set_tool_tip("Rotate W");
+        rotate_w_def->set_attribute_value("singleStep", 0.1);
+        rotate_w_def->set_attribute_value("suffix", " °");
+        auto rotate_x_def = rotate_def->AddSubProperty("X", QVariant::Double);
+        rotate_x_def->set_tool_tip("Rotate X");
+        rotate_x_def->set_attribute_value("singleStep", 0.1);
+        rotate_x_def->set_attribute_value("suffix", " °");
+        auto rotate_y_def = rotate_def->AddSubProperty("Y", QVariant::Double);
+        rotate_y_def->set_tool_tip("Rotate Y");
+        rotate_y_def->set_attribute_value("singleStep", 0.1);
+        rotate_y_def->set_attribute_value("suffix", " °");
+        auto rotate_z_def = rotate_def->AddSubProperty("Z", QVariant::Double);
+        rotate_z_def->set_tool_tip("Rotate Z");
+        rotate_z_def->set_attribute_value("singleStep", 0.1);
+        rotate_z_def->set_attribute_value("suffix", " °");
         auto rotate_mode_def = rotate_def->AddSubProperty("Mode", QtVariantPropertyManager::enumTypeId());
         rotate_mode_def->set_attribute_value("enumNames", QStringList
         {"XYZ Euler", "XZY Euler", "YXZ Euler", "YZX Euler", "ZXY Euler", "ZYX Euler", "Axis Angle", "Quaternion"});
-        rotate_mode_def->set_tool_tip("rotate mode");
-        auto rotate_angle_def = rotate_def->AddSubProperty("Rotation", QVariant::Int);
-        rotate_angle_def->set_tool_tip("rotate angle");
-        rotate_angle_def->set_attribute_value("suffix", " m");
-        rotate_angle_def->set_attribute_value("singleStep", 1);
-        auto scale_def = transform_def->AddSubProperty("Scale", QVariant::Vector4D);
-        scale_def->set_tool_tip("scale");
-        scale_def->set_default_value(QVariant::fromValue(QVector4D{1,2,3,4}));
+
+        auto scale_def = transform_def->AddSubProperty("Scale", QtVariantPropertyManager::groupTypeId());
+        scale_def->set_tool_tip("Scale");
+
+        auto scale_x_def = scale_def->AddSubProperty("X", QVariant::Double);
+        scale_x_def->set_tool_tip("Scale X");
+        scale_x_def->set_default_value(1);
+        scale_x_def->set_attribute_value("singleStep", 0.1);
+        scale_x_def->set_attribute_value("minimum", 0);
+        auto scale_y_def = scale_def->AddSubProperty("Y", QVariant::Double);
+        scale_y_def->set_tool_tip("Scale Y");
+        scale_y_def->set_default_value(1);
+        scale_y_def->set_attribute_value("singleStep", 0.1);
+        scale_y_def->set_attribute_value("minimum", 0);
+        auto scale_z_def = scale_def->AddSubProperty("Z", QVariant::Double);
+        scale_z_def->set_tool_tip("Scale Z");
+        scale_z_def->set_default_value(1);
+        scale_z_def->set_attribute_value("singleStep", 0.1);
+        scale_z_def->set_attribute_value("minimum", 0);
+
         auto info_def = AddProperty("Information", QtVariantPropertyManager::groupTypeId());
+        
         auto vertex_def = info_def->AddSubProperty("Vertex Count", QVariant::Int);
         vertex_def->set_tool_tip("vertex count");
         vertex_def->set_read_only(true);
