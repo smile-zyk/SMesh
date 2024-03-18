@@ -47,8 +47,8 @@ namespace smesh
         face_def->set_read_only(true);
     } 
     
-    std::unique_ptr<ModelObjectConfig> ModelObjectConfig::CreateUnique()
+    std::unique_ptr<ModelObjectConfig> ModelObjectConfig::CreateUnique(ModelObject* object)
     {
-        return std::make_unique<ModelObjectConfig>(ModelObjectConfigDef::Instance());
+        return std::make_unique<ModelObjectConfig>(ModelObjectConfigDef::Instance(), object);
     }
 }

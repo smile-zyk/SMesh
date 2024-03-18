@@ -1,6 +1,6 @@
 #include "modelobject.h"
 #include <memory>
-#include "smesh/log/log.h"
+#include <QDebug>
 
 namespace smesh
 {
@@ -9,10 +9,11 @@ namespace smesh
         name_ = name;
         mesh_ = std::make_shared<Mesh>(path);
         transform_ = glm::mat4(1.0);
-        config_ = ModelObjectConfig::CreateUnique();
-        connect(config_.get(), &Config::propertyChanged, this, [this](const PropertyKey& key, QVariant value)
+        config_ = ModelObjectConfig::CreateUnique(this);
+        connect(config_.get(), &Config::triggeredPropertyChanged, this, [this](const PropertyKey& key, QVariant value)
         {
-            SMESH_INFO("111");
+            qDebug() << key;
+            qDebug() << value;
         });
     }
     

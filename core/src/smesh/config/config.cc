@@ -1,11 +1,111 @@
 #include "config.h"
+#include "qtvariantproperty.h"
 #include "smesh/config/config.h"
+#include <qchar.h>
+#include <qcursor.h>
+#include <qdatetime.h>
+#include <qfont.h>
+#include <qkeysequence.h>
+#include <qlocale.h>
+#include <qpoint.h>
+#include <qsize.h>
+#include <qsizepolicy.h>
 #include <qvariant.h>
+#include <qvector3d.h>
+#include <qvector4d.h>
 
 namespace smesh
 {
+    QVariant get_default_value(int type)
+    {
+        QVariant res = QVariant();
+        switch(type)
+        {
+            case QVariant::Int:
+                res = int{};
+                break;
+            case QVariant::Double:
+                res = double{};
+                break;
+            case QVariant::Bool:
+                res = bool{};
+                break;
+            case QVariant::String:
+                res = QString{};
+                break;
+            case QVariant::Date:
+                res = QDate{};
+                break;
+            case QVariant::Time:
+                res = QTime{};
+                break;
+            case QVariant::DateTime:
+                res = QDateTime{};
+                break;
+            case QVariant::KeySequence:
+                res = QKeySequence{};
+                break;
+            case QVariant::Char:
+                res = QChar{};
+                break;
+            case QVariant::Locale:
+                res = QLocale{};
+                break;
+            case QVariant::Point:
+                res = QPoint{};
+                break;
+            case QVariant::PointF:
+                res = QPointF{};
+                break;
+            case QVariant::Vector3D:
+                res = QVector3D{};
+                break;
+            case QVariant::Vector4D:
+                res = QVector4D{};
+                break;
+            case QVariant::Size:
+                res = QSize{};
+                break;
+            case QVariant::SizeF:
+                res = QSizeF{};
+                break;
+            case QVariant::Rect:
+                res = QRect{};
+                break;
+            case QVariant::RectF:
+                res = QRectF{};
+                break;
+            case QVariant::Color:
+                res = QColor{};
+                break;
+            case QVariant::SizePolicy:
+                res = QSizePolicy{};
+                break;
+            case QVariant::Font:
+                res = QFont{};
+                break;
+            case QVariant::Cursor:
+                res = QCursor{};
+                break;
+        }
+        if(type == QtVariantPropertyManager::enumTypeId())
+        {
+            res = int{};
+        }
+        else if(type == QtVariantPropertyManager::flagTypeId())
+        {
+            res = int{};
+        }
+        return res;
+    }
+
     PropertyDef::PropertyDef(): type_(QVariant::Type::Invalid)
     {
+    }
+
+    PropertyDef::PropertyDef(int type): type_(type)
+    {
+        default_value_ = get_default_value(type);
     }
 
     PropertyDef* PropertyDef::AddSubProperty(const PropertyKey& key, int type)
@@ -18,16 +118,6 @@ namespace smesh
         return &sub_property_def_map_[key];
     }
 
-    bool PropertyDef::AddSubProperty(const PropertyKey& key, const PropertyDef& def)
-    {
-        if(def.type() == QVariant::Type::Invalid) return false;
-        if(sub_property_def_map_.contains(key) == true) return false;
-
-        sub_property_def_map_.insert(key, def);
-        sub_property_key_list_.push_back(key);
-        return true;
-    }
-    
     bool PropertyDef::IsSubKeyValid(const PropertyKey& key) const
     {
         QStringList parts = key.split('/');
@@ -123,16 +213,6 @@ namespace smesh
         return &property_def_map_[key];
     }
     
-    bool ConfigDef::AddProperty(const PropertyKey& key, PropertyDef def)
-    {
-        if(def.type() == QVariant::Type::Invalid) return false;
-        if(property_def_map_.contains(key) == true) return false;
-
-        property_def_map_.insert(key, def);
-        property_key_list_.push_back(key);
-        return true;
-    }
-    
     PropertyDef* ConfigDef::property_def(const PropertyKey &key)
     {
         QStringList parts = key.split('/');
@@ -219,12 +299,15 @@ namespace smesh
             return QVariant();
     }
     
-    bool Config::set_property(const QString& key, QVariant value)
+    bool Config::set_property(const QString& key, QVariant value, bool is_triggered)
     {
         if(IsKeyValid(key))
         {
             config_map_[key] = value;
-            emit propertyChanged(key, value);
+            if(is_triggered)
+                emit triggeredPropertyChanged(key, value);
+            else
+                emit propertyChanged(key, value);
             return true;
         }
         else

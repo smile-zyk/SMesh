@@ -2,6 +2,7 @@
 #include "QDebug"
 #include "qttreepropertybrowser.h"
 #include "qtvariantproperty.h"
+#include "smesh/config/object_config.h"
 #include "smesh/log/log.h"
 #include <QVBoxLayout>
 #include <QVector3D>
@@ -14,7 +15,7 @@
 #include <qglobal.h>
 #include <qpushbutton.h>
 #include <qwidget.h>
-
+#include "smesh/render/modelobject.h"
 
 namespace smesh
 {
@@ -27,26 +28,28 @@ namespace smesh
         layout_ = new QVBoxLayout(this);
         layout_->addWidget(property_browser_);
         setLayout(layout_);
+        property_browser_->hide();
 
         connect(variant_manager_, &QtVariantPropertyManager::valueChanged, this, [this](QtProperty *property, QVariant value)
         {
             if(property_to_key_.contains(property) == true)
             {
                 auto key = property_to_key_[property];
-                qDebug() << key;
                 if(config_ != nullptr)
                 {
-                    config_->set_property(key, value);
+                    config_->set_property(key, value, true);
                 }
             }
-            else {
-                SMESH_ERROR("key is not contain in key map1 ");
-                qDebug() << value;
-        } });
+        });
     }
 
     void ConfigEditWidget::set_config(Config *config)
     {
+        ModelObjectConfig* c = dynamic_cast<ModelObjectConfig*>(config);
+        if(c != nullptr)
+        {
+            SMESH_INFO("config object name is: {}", c->object()->name());
+        }
         if (config->def()->ConfigDefName() != config_def_->ConfigDefName())
         {
             SMESH_ERROR("config's def is not match");
@@ -73,14 +76,9 @@ namespace smesh
         // init value
         for (const auto &key : config_->all_keys())
         {
-            qDebug() << key;
             if (key_to_property_.contains(key) == true)
             {
                 key_to_property_[key]->setValue(config->property(key));
-            }
-            else
-            {
-                SMESH_ERROR("key is not contain in key map");
             }
         }
 
@@ -88,13 +86,12 @@ namespace smesh
         {
             if(key_to_property_.contains(key) == true)
             {
-                key_to_property_[key]->propertyManager()->blockSignals(true);
                 key_to_property_[key]->setValue(value);
-                key_to_property_[key]->propertyManager()->blockSignals(false);
             }
             else {
                 SMESH_ERROR("key is not contain in key map");
         } });
+        if(property_browser_->isHidden()) property_browser_->show();
     }
 
     void ConfigEditWidget::set_config_def(const ConfigDef *def)
@@ -123,7 +120,7 @@ namespace smesh
             item = variant_manager_->addProperty(def->type(), key);
 
         auto map_key = parent_key.isEmpty() ? key : (parent_key + '/' + key);
-        qDebug() << map_key;
+
         key_to_property_.insert(map_key, item);
         property_to_key_.insert(item, map_key);
         for (auto &attribute : def->attributes())
