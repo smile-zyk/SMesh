@@ -4,6 +4,8 @@
 #include "smesh/config/object_config.h"
 #include <qvariant.h>
 #include <QVector4D>
+#include <QDebug>
+
 namespace smesh
 {
     const ModelObjectConfigDef* ModelObjectConfigDef::Instance()
@@ -23,7 +25,6 @@ namespace smesh
 
         auto translate_def = transform_def->AddSubProperty("Translate", QtVariantPropertyManager::groupTypeId());
         translate_def->set_tool_tip("Translate");
-
         auto translate_x_def = translate_def->AddSubProperty("X", QVariant::Double);
         translate_x_def->set_tool_tip("Translate X");
         translate_x_def->set_attribute_value("singleStep", 0.1);
@@ -41,24 +42,47 @@ namespace smesh
         rotate_def->set_tool_tip("Rotate");
 
         auto rotate_w_def = rotate_def->AddSubProperty("W", QVariant::Double);
+        rotate_w_def->set_visible(false);
         rotate_w_def->set_tool_tip("Rotate W");
         rotate_w_def->set_attribute_value("singleStep", 0.1);
-        rotate_w_def->set_attribute_value("suffix", " °");
         auto rotate_x_def = rotate_def->AddSubProperty("X", QVariant::Double);
         rotate_x_def->set_tool_tip("Rotate X");
         rotate_x_def->set_attribute_value("singleStep", 0.1);
-        rotate_x_def->set_attribute_value("suffix", " °");
         auto rotate_y_def = rotate_def->AddSubProperty("Y", QVariant::Double);
         rotate_y_def->set_tool_tip("Rotate Y");
         rotate_y_def->set_attribute_value("singleStep", 0.1);
-        rotate_y_def->set_attribute_value("suffix", " °");
         auto rotate_z_def = rotate_def->AddSubProperty("Z", QVariant::Double);
         rotate_z_def->set_tool_tip("Rotate Z");
         rotate_z_def->set_attribute_value("singleStep", 0.1);
-        rotate_z_def->set_attribute_value("suffix", " °");
         auto rotate_mode_def = rotate_def->AddSubProperty("Mode", QtVariantPropertyManager::enumTypeId());
         rotate_mode_def->set_attribute_value("enumNames", QStringList
         {"XYZ Euler", "XZY Euler", "YXZ Euler", "YZX Euler", "ZXY Euler", "ZYX Euler", "Axis Angle", "Quaternion"});
+        rotate_mode_def->add_condition({0, 1, 2, 3, 4, 5},
+         {"Transform/Rotate/X", "Transform/Rotate/Y", "Transform/Rotate/Z", "Transform/Rotate/W"}, [=]()
+        {
+            rotate_x_def->set_attribute_value("suffix", " °");
+            rotate_y_def->set_attribute_value("suffix", " °");
+            rotate_z_def->set_attribute_value("suffix", " °");
+            rotate_w_def->set_visible(false);
+        });
+        rotate_mode_def->add_condition({6},
+         {"Transform/Rotate/X", "Transform/Rotate/Y", "Transform/Rotate/Z", "Transform/Rotate/W"}, [=]()
+        {
+            rotate_x_def->set_attribute_value("suffix", "");
+            rotate_y_def->set_attribute_value("suffix", "");
+            rotate_z_def->set_attribute_value("suffix", "");
+            rotate_w_def->set_visible(true);
+            rotate_w_def->set_attribute_value("suffix", " °");
+        });
+        rotate_mode_def->add_condition({7},
+         {"Transform/Rotate/X", "Transform/Rotate/Y", "Transform/Rotate/Z", "Transform/Rotate/W"}, [=]()
+        {
+            rotate_x_def->set_attribute_value("suffix", "");
+            rotate_y_def->set_attribute_value("suffix", "");
+            rotate_z_def->set_attribute_value("suffix", "");
+            rotate_w_def->set_visible(true);
+            rotate_w_def->set_attribute_value("suffix", "");
+        });
 
         auto scale_def = transform_def->AddSubProperty("Scale", QtVariantPropertyManager::groupTypeId());
         scale_def->set_tool_tip("Scale");
