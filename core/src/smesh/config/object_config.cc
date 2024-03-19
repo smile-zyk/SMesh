@@ -5,6 +5,7 @@
 #include <qvariant.h>
 #include <QVector4D>
 #include <QDebug>
+#include "smesh/common.h"
 
 namespace smesh
 {
@@ -56,8 +57,8 @@ namespace smesh
         rotate_z_def->set_attribute_value("singleStep", 0.1);
         auto rotate_mode_def = rotate_def->AddSubProperty("Mode", QtVariantPropertyManager::enumTypeId());
         rotate_mode_def->set_attribute_value("enumNames", QStringList
-        {"XYZ Euler", "XZY Euler", "YXZ Euler", "YZX Euler", "ZXY Euler", "ZYX Euler", "Axis Angle", "Quaternion"});
-        rotate_mode_def->add_condition({0, 1, 2, 3, 4, 5},
+        { "XYZ Euler", "XZY Euler", "YXZ Euler", "YZX Euler", "ZXY Euler", "ZYX Euler", "Axis Angle", "Quaternion" });
+        rotate_mode_def->add_condition({RotationMode::kEulerXYZ, RotationMode::kEulerXZY, RotationMode::kEulerYXZ, RotationMode::kEulerYZX, RotationMode::kEulerZXY, RotationMode::kEulerZYX},
          {"Transform/Rotate/X", "Transform/Rotate/Y", "Transform/Rotate/Z", "Transform/Rotate/W"}, [=]()
         {
             rotate_x_def->set_attribute_value("suffix", " °");
@@ -65,7 +66,7 @@ namespace smesh
             rotate_z_def->set_attribute_value("suffix", " °");
             rotate_w_def->set_visible(false);
         });
-        rotate_mode_def->add_condition({6},
+        rotate_mode_def->add_condition({RotationMode::kAxisAngle},
          {"Transform/Rotate/X", "Transform/Rotate/Y", "Transform/Rotate/Z", "Transform/Rotate/W"}, [=]()
         {
             rotate_x_def->set_attribute_value("suffix", "");
@@ -74,7 +75,7 @@ namespace smesh
             rotate_w_def->set_visible(true);
             rotate_w_def->set_attribute_value("suffix", " °");
         });
-        rotate_mode_def->add_condition({7},
+        rotate_mode_def->add_condition({RotationMode::kQuaternion},
          {"Transform/Rotate/X", "Transform/Rotate/Y", "Transform/Rotate/Z", "Transform/Rotate/W"}, [=]()
         {
             rotate_x_def->set_attribute_value("suffix", "");
