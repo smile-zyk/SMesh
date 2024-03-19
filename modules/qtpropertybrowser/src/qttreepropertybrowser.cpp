@@ -616,6 +616,27 @@ void QtTreePropertyBrowserPrivate::updateItem(QTreeWidgetItem *item)
         else
             disableItem(item);
     }
+
+    bool wasVisible = !item->isHidden();
+    bool isVisible = wasVisible;
+    if (property->isVisible())
+    {
+        QTreeWidgetItem *parent = item->parent();
+        if(!parent || !parent->isHidden())
+            isVisible = true;
+        else
+            isVisible = false;
+    }else {
+        isVisible = false;
+    }
+    if(wasVisible != isVisible)
+    {
+        if(isVisible)
+            item->setHidden(false);
+        else
+            item->setHidden(true);
+    }
+
     m_treeWidget->viewport()->update();
 }
 

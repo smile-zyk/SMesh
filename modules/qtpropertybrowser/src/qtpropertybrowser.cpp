@@ -65,6 +65,7 @@ public:
     QString m_name;
     bool m_enabled;
     bool m_modified;
+    bool m_visible;
 
     QtAbstractPropertyManager * const m_manager;
 };
@@ -276,6 +277,11 @@ bool QtProperty::isModified() const
     return d_ptr->m_modified;
 }
 
+bool QtProperty::isVisible() const
+{
+    return d_ptr->m_visible;
+}
+
 /*!
     Returns whether the property has a value.
 
@@ -411,6 +417,15 @@ void QtProperty::setModified(bool modified)
         return;
 
     d_ptr->m_modified = modified;
+    propertyChanged();
+}
+
+void QtProperty::setVisible(bool visible)
+{
+    if (d_ptr->m_visible == visible)
+        return;
+
+    d_ptr->m_visible = visible;
     propertyChanged();
 }
 

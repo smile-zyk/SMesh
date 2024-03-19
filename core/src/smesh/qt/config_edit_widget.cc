@@ -4,6 +4,8 @@
 #include "qtvariantproperty.h"
 #include "smesh/config/object_config.h"
 #include "smesh/log/log.h"
+#include "smesh/qt/config_edit_widget.h"
+#include "smesh/render/modelobject.h"
 #include <QVBoxLayout>
 #include <QVector3D>
 #include <QVector4D>
@@ -15,7 +17,6 @@
 #include <qglobal.h>
 #include <qpushbutton.h>
 #include <qwidget.h>
-#include "smesh/render/modelobject.h"
 
 namespace smesh
 {
@@ -30,23 +31,37 @@ namespace smesh
         setLayout(layout_);
         property_browser_->hide();
 
-        connect(variant_manager_, &QtVariantPropertyManager::valueChanged, this, [this](QtProperty *property, QVariant value)
-        {
-            if(property_to_key_.contains(property) == true)
-            {
-                auto key = property_to_key_[property];
-                if(config_ != nullptr)
+        connect(variant_manager_, &QtVariantPropertyManager::valueChanged, this,
+                [this](QtProperty *property, QVariant value)
                 {
-                    config_->set_property(key, value, true);
-                }
-            }
-        });
+                    if (property_to_key_.contains(property) == false)
+                        return;
+
+                    auto key = property_to_key_[property];
+                    if (config_ != nullptr)
+                        config_->set_property(key, value, true);
+
+                    auto def = key_to_property_def_[key];
+                    auto conditions = def->condition();
+                    for (auto condition : conditions)
+                    {
+                        if (condition.trigger_values.contains(value))
+                        {
+                            condition.trigger_func();
+                            for (const auto &key : condition.trigger_keys)
+                            {
+                                SetPropertyByDef(key_to_property_[key],
+                                                 key_to_property_def_[key]);
+                            }
+                        }
+                    }
+                });
     }
 
     void ConfigEditWidget::set_config(Config *config)
     {
-        ModelObjectConfig* c = dynamic_cast<ModelObjectConfig*>(config);
-        if(c != nullptr)
+        ModelObjectConfig *c = dynamic_cast<ModelObjectConfig *>(config);
+        if (c != nullptr)
         {
             SMESH_INFO("config object name is: {}", c->object()->name());
         }
@@ -76,22 +91,20 @@ namespace smesh
         // init value
         for (const auto &key : config_->all_keys())
         {
-            if (key_to_property_.contains(key) == true)
-            {
-                key_to_property_[key]->setValue(config->property(key));
-            }
+            if (key_to_property_.contains(key) == false)
+                return;
+            key_to_property_[key]->setValue(config->property(key));
         }
 
-        connect(config_, &Config::propertyChanged, this, [this](const PropertyKey &key, QVariant value)
-        {
-            if(key_to_property_.contains(key) == true)
-            {
-                key_to_property_[key]->setValue(value);
-            }
-            else {
-                SMESH_ERROR("key is not contain in key map");
-        } });
-        if(property_browser_->isHidden()) property_browser_->show();
+        connect(config_, &Config::propertyChanged, this,
+                [this](const PropertyKey &key, QVariant value)
+                {
+                    if (key_to_property_.contains(key) == false)
+                        return;
+                    key_to_property_[key]->setValue(value);
+                });
+        if (property_browser_->isHidden())
+            property_browser_->show();
     }
 
     void ConfigEditWidget::set_config_def(const ConfigDef *def)
@@ -104,16 +117,22 @@ namespace smesh
         config_def_ = def;
         for (auto &key : def->keys())
         {
-            property_browser_->addProperty(ConstructVariantProperty(key, def->property_def(key)));
+            property_browser_->addProperty(
+                ConstructVariantProperty(key, def->property_def(key)));
         }
-        property_browser_->setFactoryForManager(variant_manager_, variant_editor_factory_);
+        property_browser_->setFactoryForManager(variant_manager_,
+                                                variant_editor_factory_);
         // property_browser_->setPropertiesWithoutValueMarked(true);
         property_browser_->setHeaderVisible(false);
     }
 
-    QtVariantProperty *ConfigEditWidget::ConstructVariantProperty(const PropertyKey &key, const PropertyDef *def, const PropertyKey &parent_key)
+    QtVariantProperty *
+    ConfigEditWidget::ConstructVariantProperty(const PropertyKey &key,
+                                               const PropertyDef *def,
+                                               const PropertyKey &parent_key)
     {
         QtVariantProperty *item = nullptr;
+
         if (def->read_only())
             item = variant_manager_read_only_->addProperty(def->type(), key);
         else
@@ -122,18 +141,28 @@ namespace smesh
         auto map_key = parent_key.isEmpty() ? key : (parent_key + '/' + key);
 
         key_to_property_.insert(map_key, item);
+        key_to_property_def_.insert(map_key, def);
         property_to_key_.insert(item, map_key);
+
+        SetPropertyByDef(item, def);
+
+        for (auto &sub_key : def->sub_keys())
+            item->addSubProperty(ConstructVariantProperty(
+                sub_key, def->sub_property_def(sub_key), map_key));
+
+        return item;
+    }
+
+    void ConfigEditWidget::SetPropertyByDef(QtVariantProperty *item,
+                                            const PropertyDef *def)
+    {
         for (auto &attribute : def->attributes())
         {
             item->setAttribute(attribute, def->attribute_value(attribute));
         }
 
+        item->setVisible(def->visible());
+        item->setEnabled(def->enable());
         item->setDescriptionToolTip(def->tool_tip());
-        item->setValue(def->default_value());
-
-        for (auto &sub_key : def->sub_keys())
-            item->addSubProperty(ConstructVariantProperty(sub_key, def->sub_property_def(sub_key), map_key));
-
-        return item;
     }
 } // namespace smesh

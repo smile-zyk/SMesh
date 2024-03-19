@@ -518,13 +518,19 @@ void QtVariantPropertyManagerPrivate::slotDecimalsChanged(QtProperty *property, 
 void QtVariantPropertyManagerPrivate::slotPrefixChanged(QtProperty *property, const QString& prefix)
 {
     if (QtVariantProperty *varProp = m_internalToProperty.value(property, 0))
+    {
         emit q_ptr->attributeChanged(varProp, m_prefixAttribute, QVariant(prefix));
+        emit q_ptr->propertyChanged(varProp);
+    }
 }
 
 void QtVariantPropertyManagerPrivate::slotSuffixChanged(QtProperty *property, const QString& suffix)
 {
     if (QtVariantProperty *varProp = m_internalToProperty.value(property, 0))
+    {
         emit q_ptr->attributeChanged(varProp, m_suffixAttribute, QVariant(suffix));
+        emit q_ptr->propertyChanged(varProp);
+    }
 }
 
 void QtVariantPropertyManagerPrivate::slotValueChanged(QtProperty *property, bool val)

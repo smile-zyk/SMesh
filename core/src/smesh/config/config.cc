@@ -183,7 +183,7 @@ namespace smesh
             return sub_property_def(head)->sub_property_def(remain);
         }
     }
-    
+
     bool ConfigDef::IsKeyValid(const PropertyKey& key) const
     {
         QStringList parts = key.split('/');

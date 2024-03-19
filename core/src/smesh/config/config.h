@@ -1,12 +1,15 @@
 #pragma once
 
+#include "smesh/config/config.h"
 #include "smesh/core.h"
-#include <QHash>
+#include <QMap>
 #include <QString>
 #include <QVariant>
 #include <QtVariantPropertyManager>
-#include <qvariant.h>
 #include <QObject>
+#include <functional>
+#include <qvariant.h>
+#include <tuple>
 
 // config system based on QVariant
 
@@ -18,16 +21,22 @@ namespace smesh
     typedef int PropertyType;
     typedef QString PropertyKey;
     typedef QString AttributeKey;
-    typedef QHash<PropertyKey, PropertyDef> PropertyDefMap;
+    typedef QMap<PropertyKey, PropertyDef> PropertyDefMap;
     typedef QStringList PropertyKeyList;
     typedef QStringList AttributeList;
-    typedef QHash<PropertyKey, QVariant> PropertyMap;
-    typedef QHash<AttributeKey, QVariant> AttributeMap;
+    typedef QMap<PropertyKey, QVariant> PropertyMap;
+    typedef QMap<AttributeKey, QVariant> AttributeMap;
+    struct Condition
+    {
+      QVariantList trigger_values{};
+      QStringList trigger_keys{};
+      std::function<void()> trigger_func{};
+    };
+    typedef QList<Condition> ConditionList;
 
     class SMESH_API PropertyDef
     {
       public:
-        // for QHash initialize
         PropertyDef();
         explicit PropertyDef(PropertyType type);
         PropertyDef *AddSubProperty(const PropertyKey &key, int type);
@@ -40,7 +49,13 @@ namespace smesh
         void set_tool_tip(const QString& tool_tip) { tool_tip_ = tool_tip; }
         bool read_only() const { return read_only_; }
         void set_read_only(bool read_only) { read_only_ = read_only; }
+        bool enable() const { return enable_; }
+        void set_enable(bool enable) { enable_ = enable; }
+        bool visible() const { return visible_; }
+        void set_visible(bool visible) { visible_ = visible; } 
         void set_attribute_value(const AttributeKey &attribute, const QVariant &value) { attribute_map_.insert(attribute, value); }
+        void add_condition(const QVariantList& values, const QStringList& property_keys, std::function<void()> condition_func) { condition_list_.push_back({values, property_keys, condition_func}); }
+        ConditionList condition() const { return condition_list_; }
         QVariant attribute_value(const AttributeKey &attribute) const;
         AttributeList attributes() const { return attribute_map_.keys(); }
         const PropertyKeyList &sub_keys() const { return sub_property_key_list_; }
@@ -52,7 +67,10 @@ namespace smesh
         QVariant default_value_{};
         QString tool_tip_{};
         bool read_only_{};
+        bool enable_{true};
+        bool visible_{true};
         AttributeMap attribute_map_{};
+        ConditionList condition_list_{};
         PropertyDefMap sub_property_def_map_{};
         PropertyKeyList sub_property_key_list_{};
     };
