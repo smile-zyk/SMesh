@@ -23,3 +23,15 @@ enum class GizmoMode
     kScale = 1 << 1,
     kTransform = 1 << 2
 };
+
+enum RotationMode
+{
+    kEulerXYZ = 0,
+    kEulerXZY = 1,
+    kEulerYXZ = 2,
+    kEulerYZX = 3,
+    kEulerZXY = 4,
+    kEulerZYX = 5,
+    kAxisAngle = 6,
+    kQuaternion = 7,
+};
