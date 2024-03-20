@@ -35,7 +35,7 @@ namespace smesh
         Rotation r(RotationMode::kEulerXYZ, {rotate[0], rotate[1], rotate[2], 0});
         r.SetRotationMode(config_->property("Transform/Rotate/Mode").toInt());
         SMESH_INFO("set translate ({}, {}, {})", translate[0], translate[1], translate[2]);
-        SMESH_INFO("set rotate ({}, {}, {})", r.rotate_data().x, r.rotate_data().y, r.rotate_data().z);
+        SMESH_INFO("set rotate ({}, {}, {})", rotate[0], rotate[1], rotate[2]);
         SMESH_INFO("set scale ({}, {}, {})", scale[0], scale[1], scale[2]);
         config_->set_property("Transform/Translate/X", translate[0]);
         config_->set_property("Transform/Translate/Y", translate[1]);
@@ -63,15 +63,20 @@ namespace smesh
         float scale_x = config_->property("Transform/Scale/X").toDouble();
         float scale_y = config_->property("Transform/Scale/Y").toDouble();
         float scale_z = config_->property("Transform/Scale/Z").toDouble();
-        Rotation r(rotate_mode, {rotate_x, rotate_y, rotate_z, rotate_w});
-        SMESH_INFO("translate ({}, {}, {})", translate_x, translate_y, translate_z);
-        SMESH_INFO("rotate ({}, {}, {})", rotate_x, rotate_y, rotate_z);
-        SMESH_INFO("scale ({}, {}, {})", scale_x, scale_y, scale_z);
-        glm::mat4 res{1.0f};
-        res = glm::scale(res, glm::vec3{scale_x, scale_y, scale_z});
-        res = r.GetRotateMatrix() * res;
-        res = glm::translate(res, {translate_x, translate_y, translate_z});
-        transform_ = res;
+        // Rotation r(rotate_mode, {rotate_x, rotate_y, rotate_z, rotate_w});
+        // SMESH_INFO("translate ({}, {}, {})", translate_x, translate_y, translate_z);
+        // SMESH_INFO("rotate ({}, {}, {})", rotate_x, rotate_y, rotate_z);
+        // SMESH_INFO("scale ({}, {}, {})", scale_x, scale_y, scale_z);
+        // glm::mat4 res{1.0f};
+        // res = glm::scale(res, {scale_x, scale_y, scale_z});z
+        // res = r.GetRotateMatrix() * res;
+        // res = glm::translate(res, {translate_x, translate_y, translate_z});
+        float res[16];
+        float translate[3] = {translate_x, translate_y, translate_z};
+        float rotate[3] = {rotate_x, rotate_y, rotate_z};
+        float scale[3] = {scale_x, scale_y, scale_z};
+        ImGuizmo::RecomposeMatrixFromComponents(translate, rotate, scale, res);
+        memcpy(glm::value_ptr(transform_), res, sizeof(res));
     }
 
     ModelObject::~ModelObject()
