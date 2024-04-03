@@ -35,3 +35,13 @@ enum RotationMode
     kAxisAngle = 6,
     kQuaternion = 7,
 };
+
+enum EulerMode
+{
+    kXYZ = 0,
+    kXZY = 1,
+    kYXZ = 2,
+    kYZX = 3,
+    kZXY = 4,
+    kZYX = 5,
+};

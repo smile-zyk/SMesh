@@ -1,128 +1,93 @@
 #include "rotation.h"
+#include "smesh/common.h"
+#include <glm/ext/quaternion_trigonometric.hpp>
+#include <glm/fwd.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/euler_angles.hpp>
 #include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/euler_angles.hpp>
 
 namespace smesh
 {
-    glm::mat4 Rotation::GetRotateMatrix()
+    Rotation::Rotation(int euler_mode, const glm::vec3 &rotate_degree)
     {
-        if (rotate_mode_ == RotationMode::kEulerXYZ)
+        glm::mat4 rotate_matrix{1.0};
+        switch (euler_mode)
         {
-            return glm::eulerAngleXYZ(glm::radians(rotate_data_.x), glm::radians(rotate_data_.y), glm::radians(rotate_data_.z));
+        case EulerMode::kXYZ:
+            rotate_matrix = glm::eulerAngleXYZ(glm::radians(rotate_degree.x), glm::radians(rotate_degree.y), glm::radians(rotate_degree.z));
+            break;
+        case EulerMode::kXZY:
+            rotate_matrix = glm::eulerAngleXZY(glm::radians(rotate_degree.x), glm::radians(rotate_degree.z), glm::radians(rotate_degree.y));
+            break;
+        case EulerMode::kYXZ:
+            rotate_matrix = glm::eulerAngleYXZ(glm::radians(rotate_degree.y), glm::radians(rotate_degree.x), glm::radians(rotate_degree.z));
+            break;
+        case EulerMode::kYZX:
+            rotate_matrix = glm::eulerAngleYZX(glm::radians(rotate_degree.y), glm::radians(rotate_degree.z), glm::radians(rotate_degree.x));
+            break;
+        case EulerMode::kZXY:
+            rotate_matrix = glm::eulerAngleZXY(glm::radians(rotate_degree.z), glm::radians(rotate_degree.x), glm::radians(rotate_degree.y));
+            break;
+        case EulerMode::kZYX:
+            rotate_matrix = glm::eulerAngleZYX(glm::radians(rotate_degree.z), glm::radians(rotate_degree.y), glm::radians(rotate_degree.x));
+            break;
         }
-        else if (rotate_mode_ == RotationMode::kEulerXZY)
-        {
-            return glm::eulerAngleXZY(glm::radians(rotate_data_.x), glm::radians(rotate_data_.z), glm::radians(rotate_data_.y));
-        }
-        else if (rotate_mode_ == RotationMode::kEulerYXZ)
-        {
-            return glm::eulerAngleYXZ(glm::radians(rotate_data_.y), glm::radians(rotate_data_.x), glm::radians(rotate_data_.z));
-        }
-        else if (rotate_mode_ == RotationMode::kEulerYZX)
-        {
-            return glm::eulerAngleYZX(glm::radians(rotate_data_.y), glm::radians(rotate_data_.z), glm::radians(rotate_data_.x));
-        }
-        else if (rotate_mode_ == RotationMode::kEulerZXY)
-        {
-            return glm::eulerAngleZXY(glm::radians(rotate_data_.z), glm::radians(rotate_data_.x), glm::radians(rotate_data_.y));
-        }
-        else if (rotate_mode_ == RotationMode::kEulerZYX)
-        {
-            return glm::eulerAngleZYX(glm::radians(rotate_data_.z), glm::radians(rotate_data_.y), glm::radians(rotate_data_.x));
-        }
-        else if (rotate_mode_ == RotationMode::kAxisAngle)
-        {
-            return glm::mat4_cast(glm::angleAxis(glm::radians(rotate_data_.w), glm::vec3(rotate_data_)));
-        }
-        else if (rotate_mode_ == RotationMode::kQuaternion)
-        {
-            return glm::mat4_cast(glm::quat(rotate_data_));
-        }
-        else
-            return glm::mat4{1.0};
+        quat_ = glm::quat_cast(rotate_matrix);
     }
 
-    void Rotation::SetRotation(int rotate_mode, const glm::vec4 &rotate_data)
+    Rotation::Rotation(const AxisAngle &rotate_axis_angle)
     {
-        rotate_mode_ = rotate_mode;
-        rotate_data_ = rotate_data;
+        quat_ = glm::angleAxis(rotate_axis_angle.angle, rotate_axis_angle.axis);
     }
 
-    void Rotation::SetRotationData(const glm::vec4 &rotate_data)
+    Rotation::Rotation(const glm::quat &rotate_quat)
     {
-        rotate_data_ = rotate_data;
+        quat_ = rotate_quat;
     }
 
-    void Rotation::SetRotationMode(int rotate_mode)
+    glm::vec3 Rotation::euler(int euler_mode)
     {
-        if(rotate_mode == rotate_mode_) return;
-        glm::mat4 cur_mat = GetRotateMatrix();
-        if ((rotate_mode_ == RotationMode::kEulerXYZ ||
-             rotate_mode_ == RotationMode::kEulerXZY ||
-             rotate_mode_ == RotationMode::kEulerYXZ ||
-             rotate_mode_ == RotationMode::kEulerYZX ||
-             rotate_mode_ == RotationMode::kEulerZXY ||
-             rotate_mode_ == RotationMode::kEulerZYX))
+        glm::mat4 rotate_matrix = glm::mat4_cast(quat_);
+        float x = 0, y = 0, z = 0;
+        switch (euler_mode)
         {
-            glm::quat q = glm::quat_cast(cur_mat);
-            if(rotate_mode == RotationMode::kQuaternion)
-            {
-                rotate_data_ = {q.x, q.y, q.z, q.w};
-            }
-            else if(rotate_mode == RotationMode::kAxisAngle)
-            {
-                glm::vec3 axis = glm::axis(q);
-                float angle = glm::angle(q);
-                rotate_data_ = {axis.x, axis.y, axis.z, glm::degrees(angle)};
-            }
+        case EulerMode::kXYZ:
+            glm::extractEulerAngleXYZ(rotate_matrix, x, y, z);
+            break;
+        case EulerMode::kXZY:
+            glm::extractEulerAngleXZY(rotate_matrix, x, z, y);
+            break;
+        case EulerMode::kYXZ:
+            glm::extractEulerAngleYXZ(rotate_matrix, y, x, z);
+            break;
+        case EulerMode::kYZX:
+            glm::extractEulerAngleYZX(rotate_matrix, y, z, x);
+            break;
+        case EulerMode::kZXY:
+            glm::extractEulerAngleZXY(rotate_matrix, z, x, y);
+            break;
+        case EulerMode::kZYX:
+            glm::extractEulerAngleZYX(rotate_matrix, z, y, x);
+            break;
         }
-        else if(rotate_mode_ == RotationMode::kQuaternion ||
-            rotate_mode_ == RotationMode::kAxisAngle)
-        {
-            float x = 0, y = 0, z = 0;
-            if(rotate_mode == RotationMode::kEulerXYZ)
-            {
-                glm::extractEulerAngleXYZ(cur_mat, x, y, z);
-                rotate_data_ = {x, y, z, 0};
-            }
-            else if(rotate_mode == RotationMode::kEulerXZY)
-            {
-                glm::extractEulerAngleXZY(cur_mat, x, z, y);
-                rotate_data_ = {x, y, z, 0};
-            }
-            else if(rotate_mode == RotationMode::kEulerYXZ)
-            {
-                glm::extractEulerAngleYXZ(cur_mat, y, x, z);
-                rotate_data_ = {x, y, z, 0};
-            }
-            else if(rotate_mode == RotationMode::kEulerYZX)
-            {
-                glm::extractEulerAngleYZX(cur_mat, y, z, x);
-                rotate_data_ = {x, y, z, 0};
-            }
-            else if(rotate_mode == RotationMode::kEulerZXY)
-            {
-                glm::extractEulerAngleZXY(cur_mat, z, x, y);
-                rotate_data_ = {x, y, z, 0};
-            }
-            else if(rotate_mode == RotationMode::kEulerZYX)
-            {
-                glm::extractEulerAngleZYX(cur_mat, z, y, x);
-                rotate_data_ = {x, y, z, 0};
-            }
-            else if(rotate_mode_ == RotationMode::kAxisAngle)
-            {
-                glm::vec3 axis = glm::axis(glm::quat(rotate_data_));
-                float angle = glm::angle(glm::quat(rotate_data_));
-                rotate_data_ = {axis.x, axis.y, axis.z, glm::degrees(angle)};
-            }
-            else if(rotate_mode_ == RotationMode::kQuaternion)
-            {
-                glm::quat q = glm::angleAxis(glm::radians(rotate_data_.w), glm::vec3(rotate_data_));
-                rotate_data_ = {q.x, q.y, q.z, q.w};
-            }
-        }
-        rotate_mode_ = rotate_mode;
+        return {x, y, z};
     }
+
+    glm::quat Rotation::quaternion()
+    {
+        return quat_;
+    }
+
+    Rotation::AxisAngle Rotation::axis_angle()
+    {
+        float angle = glm::angle(quat_);
+        glm::vec3 axis = glm::axis(quat_);
+        return {axis, angle};
+    }
+
+    glm::mat4 Rotation::matrix()
+    {
+        return glm::mat4_cast(quat_);
+    }
+
 } // namespace smesh
