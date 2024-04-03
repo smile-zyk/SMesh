@@ -28,15 +28,15 @@ namespace smesh
         translate_def->set_tool_tip("Translate");
         auto translate_x_def = translate_def->AddSubProperty("X", QVariant::Double);
         translate_x_def->set_tool_tip("Translate X");
-        translate_x_def->set_attribute_value("singleStep", 0.1);
+        translate_x_def->set_attribute_value("singleStep", 1);
         translate_x_def->set_attribute_value("suffix", " m");
         auto translate_y_def = translate_def->AddSubProperty("Y", QVariant::Double);
         translate_y_def->set_tool_tip("Translate Y");
-        translate_y_def->set_attribute_value("singleStep", 0.1);
+        translate_y_def->set_attribute_value("singleStep", 1);
         translate_y_def->set_attribute_value("suffix", " m");
         auto translate_z_def = translate_def->AddSubProperty("Z", QVariant::Double);
         translate_z_def->set_tool_tip("Translate Z");
-        translate_z_def->set_attribute_value("singleStep", 0.1);
+        translate_z_def->set_attribute_value("singleStep", 1);
         translate_z_def->set_attribute_value("suffix", " m");
 
         auto rotate_def = transform_def->AddSubProperty("Rotate", QtVariantPropertyManager::groupTypeId());
@@ -45,16 +45,16 @@ namespace smesh
         auto rotate_w_def = rotate_def->AddSubProperty("W", QVariant::Double);
         rotate_w_def->set_visible(false);
         rotate_w_def->set_tool_tip("Rotate W");
-        rotate_w_def->set_attribute_value("singleStep", 0.1);
+        rotate_w_def->set_attribute_value("singleStep", 1);
         auto rotate_x_def = rotate_def->AddSubProperty("X", QVariant::Double);
         rotate_x_def->set_tool_tip("Rotate X");
-        rotate_x_def->set_attribute_value("singleStep", 0.1);
+        rotate_x_def->set_attribute_value("singleStep", 1);
         auto rotate_y_def = rotate_def->AddSubProperty("Y", QVariant::Double);
         rotate_y_def->set_tool_tip("Rotate Y");
-        rotate_y_def->set_attribute_value("singleStep", 0.1);
+        rotate_y_def->set_attribute_value("singleStep", 1);
         auto rotate_z_def = rotate_def->AddSubProperty("Z", QVariant::Double);
         rotate_z_def->set_tool_tip("Rotate Z");
-        rotate_z_def->set_attribute_value("singleStep", 0.1);
+        rotate_z_def->set_attribute_value("singleStep", 1);
         auto rotate_mode_def = rotate_def->AddSubProperty("Mode", QtVariantPropertyManager::enumTypeId());
         rotate_mode_def->set_attribute_value("enumNames", QStringList
         { "XYZ Euler", "XZY Euler", "YXZ Euler", "YZX Euler", "ZXY Euler", "ZYX Euler", "Axis Angle", "Quaternion" });

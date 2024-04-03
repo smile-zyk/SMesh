@@ -1,4 +1,5 @@
 #include "modelobject.h"
+#include <glm/ext/matrix_transform.hpp>
 #include <memory>
 #include <QDebug>
 #include <imgui.h>
@@ -63,20 +64,15 @@ namespace smesh
         float scale_x = config_->property("Transform/Scale/X").toDouble();
         float scale_y = config_->property("Transform/Scale/Y").toDouble();
         float scale_z = config_->property("Transform/Scale/Z").toDouble();
-        // Rotation r(rotate_mode, {rotate_x, rotate_y, rotate_z, rotate_w});
-        // SMESH_INFO("translate ({}, {}, {})", translate_x, translate_y, translate_z);
-        // SMESH_INFO("rotate ({}, {}, {})", rotate_x, rotate_y, rotate_z);
-        // SMESH_INFO("scale ({}, {}, {})", scale_x, scale_y, scale_z);
-        // glm::mat4 res{1.0f};
-        // res = glm::scale(res, {scale_x, scale_y, scale_z});z
-        // res = r.GetRotateMatrix() * res;
-        // res = glm::translate(res, {translate_x, translate_y, translate_z});
-        float res[16];
-        float translate[3] = {translate_x, translate_y, translate_z};
-        float rotate[3] = {rotate_x, rotate_y, rotate_z};
-        float scale[3] = {scale_x, scale_y, scale_z};
-        ImGuizmo::RecomposeMatrixFromComponents(translate, rotate, scale, res);
-        memcpy(glm::value_ptr(transform_), res, sizeof(res));
+        Rotation r(rotate_mode, {rotate_x, rotate_y, rotate_z, rotate_w});
+        SMESH_INFO("translate ({}, {}, {})", translate_x, translate_y, translate_z);
+        SMESH_INFO("rotate ({}, {}, {})", rotate_x, rotate_y, rotate_z);
+        SMESH_INFO("scale ({}, {}, {})", scale_x, scale_y, scale_z);
+        glm::mat4 res{1.0f};
+        res = glm::translate(res, {translate_x, translate_y, translate_z});
+        res = res * r.GetRotateMatrix();
+        res = glm::scale(res, {scale_x, scale_y, scale_z});
+        transform_ = res;
     }
 
     ModelObject::~ModelObject()
