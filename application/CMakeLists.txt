@@ -13,7 +13,7 @@ add_executable(${PROJECT_NAME} ${SRC_DIR} ${QRC_FILES})
 
 target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Widgets Qt5::Core Qt5::Gui)
 target_link_libraries(${PROJECT_NAME} PRIVATE smesh_core)
-target_compile_definitions(${PROJECT_NAME} PRIVATE SMESH_PLATFORM_WINDOWS _USE_MATH_DEFINES)
+target_compile_definitions(${PROJECT_NAME} PRIVATE SMESH_PLATFORM_WINDOWS)
 target_compile_definitions(${PROJECT_NAME} PRIVATE _USE_MATH_DEFINES)
 
 # run windeployqt

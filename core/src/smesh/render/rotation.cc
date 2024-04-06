@@ -5,10 +5,26 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/euler_angles.hpp>
+#include <glm/trigonometric.hpp>
 
 namespace smesh
 {
     Rotation::Rotation(int euler_mode, const glm::vec3 &rotate_degree)
+    {
+        set_euler(euler_mode, rotate_degree);
+    }
+
+    Rotation::Rotation(const AxisAngle &rotate_axis_angle)
+    {
+        set_axis_angle(rotate_axis_angle);
+    }
+
+    Rotation::Rotation(const glm::quat &rotate_quat)
+    {
+        quat_ = rotate_quat;
+    }
+    
+    void Rotation::set_euler(int euler_mode, const glm::vec3& rotate_degree)
     {
         glm::mat4 rotate_matrix{1.0};
         switch (euler_mode)
@@ -34,13 +50,13 @@ namespace smesh
         }
         quat_ = glm::quat_cast(rotate_matrix);
     }
-
-    Rotation::Rotation(const AxisAngle &rotate_axis_angle)
+    
+    void Rotation::set_axis_angle(const AxisAngle& rotate_axis_angle)
     {
         quat_ = glm::angleAxis(rotate_axis_angle.angle, rotate_axis_angle.axis);
     }
-
-    Rotation::Rotation(const glm::quat &rotate_quat)
+    
+    void Rotation::set_quaternion(const glm::quat& rotate_quat)
     {
         quat_ = rotate_quat;
     }
@@ -70,7 +86,7 @@ namespace smesh
             glm::extractEulerAngleZYX(rotate_matrix, z, y, x);
             break;
         }
-        return {x, y, z};
+        return {glm::degrees(x), glm::degrees(y), glm::degrees(z)};
     }
 
     glm::quat Rotation::quaternion()

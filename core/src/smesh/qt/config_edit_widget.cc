@@ -101,7 +101,9 @@ namespace smesh
                 {
                     if (key_to_property_.contains(key) == false)
                         return;
+                    config_->blockSignals(true);
                     key_to_property_[key]->setValue(value);
+                    config_->blockSignals(false);
                 });
         if (property_browser_->isHidden())
             property_browser_->show();
