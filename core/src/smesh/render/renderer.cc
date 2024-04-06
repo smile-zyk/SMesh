@@ -28,12 +28,12 @@ namespace smesh
     void Renderer::Init()
     {
         SMESH_TRACE("Render Init Begin");
-        auto object_shader_program = std::make_unique<glwrapper::ShaderProgram>("D:/DEV/SMesh/core/src/smesh/render/shader/object_vertex.glsl",
-                                                                                   "D:/DEV/SMesh/core/src/smesh/render/shader/object_fragment.glsl",
-                                                                                   "D:/DEV/SMesh/core/src/smesh/render/shader/object_geometry.glsl");
+        auto object_shader_program = std::make_unique<glwrapper::ShaderProgram>("D:/repos/SMesh/core/src/smesh/render/shader/object_vertex.glsl",
+                                                                                   "D:/repos/SMesh/core/src/smesh/render/shader/object_fragment.glsl",
+                                                                                   "D:/repos/SMesh/core/src/smesh/render/shader/object_geometry.glsl");
 
-        auto grid_shader_program = std::make_unique<glwrapper::ShaderProgram>("D:/DEV/SMesh/core/src/smesh/render/shader/grid_vertex.glsl",
-                                                                              "D:/DEV/SMesh/core/src/smesh/render/shader/grid_fragment.glsl");
+        auto grid_shader_program = std::make_unique<glwrapper::ShaderProgram>("D:/repos/SMesh/core/src/smesh/render/shader/grid_vertex.glsl",
+                                                                              "D:/repos/SMesh/core/src/smesh/render/shader/grid_fragment.glsl");
 
         shader_program_map_.insert({"object_shader", std::move(object_shader_program)});
         shader_program_map_.insert({"grid_shader", std::move(grid_shader_program)});
@@ -149,7 +149,7 @@ namespace smesh
         {
             int idx = selected_object_idx_.at(0);   
             auto& object = object_list_.at(idx);
-            glm::mat4 trans = object->transform();
+            glm::mat4 trans = object->transform_matrix();
             ImGuizmo::SetOrthographic(false);
             // ImGuizmo::SetDrawlist();
 
@@ -157,7 +157,8 @@ namespace smesh
             ImGuizmo::Manipulate(glm::value_ptr(camera_->GetViewMatrix()), glm::value_ptr(camera_->GetProjectionMatrix()), GetGizmoOperation(gizmo_mode_), ImGuizmo::LOCAL, glm::value_ptr(trans));
             if(ImGuizmo::IsUsing())
             {
-                object->set_transform(trans);
+                object->transform()->set_matrix(trans);
+                object->UpdateConfigFromTransform();
             }
         }
         ImGui::End();
@@ -188,7 +189,7 @@ namespace smesh
         vao.bind();
         auto& object_shader = shader_program_map_.at("object_shader");
         object_shader->use();
-        object_shader->set_uniform_value("model_matrix", object->transform());
+        object_shader->set_uniform_value("model_matrix", object->transform_matrix());
         object_shader->set_uniform_value("view_matrix", camera_->GetViewMatrix());
         object_shader->set_uniform_value("projection_matrix", camera_->GetProjectionMatrix());
         object_shader->set_uniform_value("view_position", camera_->eye());
