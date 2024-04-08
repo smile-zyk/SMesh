@@ -4,7 +4,6 @@
 #include "glm/mat4x4.hpp"
 #include "glm/vec4.hpp"
 #include "smesh/core.h"
-#include <glm/fwd.hpp>
 
 namespace smesh
 {
