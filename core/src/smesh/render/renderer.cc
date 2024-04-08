@@ -4,20 +4,19 @@
 #include "shader_program.h"
 #include "smesh/log/log.h"
 #include "smesh/render/camera.h"
+#include "smesh/render/modelobject.h"
 #include "vertex_array.h"
 #include <QtImGui.h>
-#include <glm/fwd.hpp>
 #include <imgui.h>
 #include <ImGuizmo.h>
-#include <memory>
-#include <utility>
 #include <glm/gtc/type_ptr.hpp>
+#include <memory>
+
 
 namespace smesh
 {
     Renderer::Renderer()
     {
-
     }
 
     void Renderer::AddModelObject(std::unique_ptr<ModelObject> object)
@@ -29,8 +28,8 @@ namespace smesh
     {
         SMESH_TRACE("Render Init Begin");
         auto object_shader_program = std::make_unique<glwrapper::ShaderProgram>("D:/Dev/SMesh/core/src/smesh/render/shader/object_vertex.glsl",
-                                                                                   "D:/Dev/SMesh/core/src/smesh/render/shader/object_fragment.glsl",
-                                                                                   "D:/Dev/SMesh/core/src/smesh/render/shader/object_geometry.glsl");
+                                                                                "D:/Dev/SMesh/core/src/smesh/render/shader/object_fragment.glsl",
+                                                                                "D:/Dev/SMesh/core/src/smesh/render/shader/object_geometry.glsl");
 
         auto grid_shader_program = std::make_unique<glwrapper::ShaderProgram>("D:/Dev/SMesh/core/src/smesh/render/shader/grid_vertex.glsl",
                                                                               "D:/Dev/SMesh/core/src/smesh/render/shader/grid_fragment.glsl");
@@ -75,11 +74,52 @@ namespace smesh
         width_ = w;
         height_ = h;
     }
-    
-    ModelObject* Renderer::object(size_t idx)
+
+    ModelObject *Renderer::object(size_t idx)
     {
-        if(idx >= object_list_.size()) return nullptr;
+        if (idx >= object_list_.size())
+            return nullptr;
         return object_list_.at(idx).get();
+    }
+
+    void Renderer::SelectObject(size_t idx)
+    {
+        auto obj = object(idx);
+        if (obj == nullptr)
+            return;
+        obj->is_selected(true);
+    }
+
+    void Renderer::SelectObjects(const std::vector<size_t> &ids)
+    {
+        for (auto idx : ids)
+            SelectObject(idx);
+    }
+
+    void Renderer::SelectAllObject()
+    {
+        for (size_t i = 0; i < object_list_.size(); i++)
+            SelectObject(i);
+    }
+
+    void Renderer::DeselectObject(size_t idx)
+    {
+        auto obj = object(idx);
+        if (obj == nullptr)
+            return;
+        obj->is_selected(false);
+    }
+
+    void Renderer::DeselectObjects(const std::vector<size_t> &ids)
+    {
+        for (auto idx : ids)
+            DeselectObject(idx);
+    }
+
+    void Renderer::DeselectAllObject()
+    {
+        for (size_t i = 0; i < object_list_.size(); i++)
+            DeselectObject(i);
     }
 
     void Renderer::UpdateTime()
@@ -94,7 +134,7 @@ namespace smesh
     void Renderer::DrawScene()
     {
         // TODO: create axis and grid
-        auto& grid_shader = shader_program_map_.at("grid_shader");
+        auto &grid_shader = shader_program_map_.at("grid_shader");
         grid_shader->use();
         grid_shader->set_uniform_value("view_matrix", camera_->GetViewMatrix());
         grid_shader->set_uniform_value("projection_matrix", camera_->GetProjectionMatrix());
@@ -107,19 +147,20 @@ namespace smesh
     static ImGuizmo::OPERATION GetGizmoOperation(GizmoMode mode)
     {
         ImGuizmo::OPERATION res = ImGuizmo::OPERATION::TRANSLATE;
-        switch (mode) {
-            case GizmoMode::kTranslate:
-                res = ImGuizmo::OPERATION::TRANSLATE;
-                break;
-            case GizmoMode::kRotate:
-                res = ImGuizmo::OPERATION::ROTATE;
-                break;
-            case GizmoMode::kScale:
-                res = ImGuizmo::OPERATION::SCALE;
-                break;
-            case GizmoMode::kTransform:
-                res = ImGuizmo::OPERATION::TRANSLATE | ImGuizmo::OPERATION::ROTATE | ImGuizmo::OPERATION::SCALE;
-                break;
+        switch (mode)
+        {
+        case GizmoMode::kTranslate:
+            res = ImGuizmo::OPERATION::TRANSLATE;
+            break;
+        case GizmoMode::kRotate:
+            res = ImGuizmo::OPERATION::ROTATE;
+            break;
+        case GizmoMode::kScale:
+            res = ImGuizmo::OPERATION::SCALE;
+            break;
+        case GizmoMode::kTransform:
+            res = ImGuizmo::OPERATION::TRANSLATE | ImGuizmo::OPERATION::ROTATE | ImGuizmo::OPERATION::SCALE;
+            break;
         }
         return res;
     }
@@ -144,20 +185,22 @@ namespace smesh
         {
             ImGui::SliderFloat("LineWidth", &line_width, 0, 5);
         }
-        if(selected_object_idx_.size() > 0)
+        for (int i = 0; i < object_list_.size(); i++)
         {
-            int idx = selected_object_idx_.at(0);   
-            auto& object = object_list_.at(idx);
-            glm::mat4 trans = object->transform_matrix();
-            ImGuizmo::SetOrthographic(false);
-            // ImGuizmo::SetDrawlist();
-
-            ImGuizmo::SetRect(0, 0, 1.f * width_, 1.f * height_);
-            ImGuizmo::Manipulate(glm::value_ptr(camera_->GetViewMatrix()), glm::value_ptr(camera_->GetProjectionMatrix()), GetGizmoOperation(gizmo_mode_), ImGuizmo::LOCAL, glm::value_ptr(trans));
-            if(ImGuizmo::IsUsing())
+            auto obj = object(i);
+            if (obj->is_selected())
             {
-                object->transform()->set_matrix(trans);
-                object->UpdateConfigFromTransform();
+                glm::mat4 trans = obj->transform_matrix();
+                ImGuizmo::SetOrthographic(false);
+                // ImGuizmo::SetDrawlist();
+
+                ImGuizmo::SetRect(0, 0, 1.f * width_, 1.f * height_);
+                ImGuizmo::Manipulate(glm::value_ptr(camera_->GetViewMatrix()), glm::value_ptr(camera_->GetProjectionMatrix()), GetGizmoOperation(gizmo_mode_), ImGuizmo::LOCAL, glm::value_ptr(trans));
+                if (ImGuizmo::IsUsing())
+                {
+                    obj->transform()->set_matrix(trans);
+                    obj->UpdateConfigFromTransform();
+                }
             }
         }
         ImGui::End();
@@ -186,7 +229,7 @@ namespace smesh
         vao.enable_attrib(2);
         vao.bind_element_buffer(ebo);
         vao.bind();
-        auto& object_shader = shader_program_map_.at("object_shader");
+        auto &object_shader = shader_program_map_.at("object_shader");
         object_shader->use();
         object_shader->set_uniform_value("model_matrix", object->transform_matrix());
         object_shader->set_uniform_value("view_matrix", camera_->GetViewMatrix());

@@ -27,8 +27,12 @@ namespace smesh
         ModelObject *object(size_t idx);
         size_t object_count() { return object_list_.size(); }
         Camera *camera() { return camera_.get(); }
-        void set_selected_object_idx(const std::vector<int> &idx) { selected_object_idx_ = idx; }
-        std::vector<int> &selected_object_idx() { return selected_object_idx_; }
+        void SelectObject(size_t idx);
+        void SelectObjects(const std::vector<size_t>& ids);
+        void SelectAllObject();
+        void DeselectObject(size_t idx);
+        void DeselectObjects(const std::vector<size_t>& ids);
+        void DeselectAllObject();
         void set_gizmo_mode(GizmoMode mode) { gizmo_mode_ = mode; }
         GizmoMode gizmo_mode() { return gizmo_mode_; }
 
@@ -45,7 +49,6 @@ namespace smesh
         std::map<std::string, std::unique_ptr<glwrapper::ShaderProgram>> shader_program_map_;
         std::vector<std::unique_ptr<ModelObject>> object_list_;
         std::chrono::high_resolution_clock::duration current_frame_time_;
-        std::vector<int> selected_object_idx_;
         int width_{};
         int height_{};
     };
