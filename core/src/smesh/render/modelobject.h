@@ -26,7 +26,10 @@ namespace smesh
         Transform* transform() { return transform_.get(); }
         glm::mat4 transform_matrix() { return transform_->matrix(); }
         Config* config() { return config_.get(); }
+        void is_selected(bool selected) { is_selected_ = selected; }
+        bool is_selected() { return is_selected_; }
       private:
+        bool is_selected_ = false;
         std::string name_;
         std::shared_ptr<Mesh> mesh_;
         std::unique_ptr<Transform> transform_;
