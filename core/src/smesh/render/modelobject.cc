@@ -22,9 +22,9 @@ namespace smesh
         mesh_ = std::make_shared<Mesh>(path);
         transform_ = std::make_unique<Transform>();
         config_ = ModelObjectConfig::CreateUnique(this);
-        connect(config_.get(), &Config::triggeredPropertyChanged, this, [this](const PropertyKey& key, QVariant value)
+        connect(config_.get(), &Config::triggeredPropertyChanged, this, [this](const PropertyKey& key, QVariant value, QVariant old_value)
         {
-            UpdateTransformFromConfig();
+            UpdateTransformFromConfig(key == "Transform/Rotate/Mode" && value != old_value);
         });
     }
     
@@ -39,19 +39,45 @@ namespace smesh
         
     }
     
-    void ModelObject::UpdateTransformFromConfig()
+    void ModelObject::UpdateTransformFromConfig(bool is_rotate_mode_change)
     {
         float translate_x = config_->property("Transform/Translate/X").toDouble();
         float translate_y = config_->property("Transform/Translate/Y").toDouble();
         float translate_z = config_->property("Transform/Translate/Z").toDouble();
+        float scale_x = config_->property("Transform/Scale/X").toDouble();
+        float scale_y = config_->property("Transform/Scale/Y").toDouble();
+        float scale_z = config_->property("Transform/Scale/Z").toDouble();
+        int rotate_mode = config_->property("Transform/Rotate/Mode").toInt();
+        if(is_rotate_mode_change == true)
+        {
+            if(rotate_mode == RotationMode::kAxisAngle)
+            {
+                auto axis_angle = transform_->rotate()->axis_angle();
+                config_->set_property("Transform/Rotate/X", axis_angle.axis.x);
+                config_->set_property("Transform/Rotate/Y", axis_angle.axis.y);
+                config_->set_property("Transform/Rotate/Z", axis_angle.axis.z);
+                config_->set_property("Transform/Rotate/W", glm::degrees(axis_angle.angle));
+            }
+            else if(rotate_mode == RotationMode::kQuaternion)
+            {
+                auto quat = transform_->rotate()->quaternion();
+                config_->set_property("Transform/Rotate/X", quat.x);
+                config_->set_property("Transform/Rotate/Y", quat.y);
+                config_->set_property("Transform/Rotate/Z", quat.z);
+                config_->set_property("Transform/Rotate/W", quat.w);
+            }
+            else 
+            {
+                auto euler = transform_->rotate()->euler(rotate_mode);
+                config_->set_property("Transform/Rotate/X", euler.x);
+                config_->set_property("Transform/Rotate/Y", euler.y);
+                config_->set_property("Transform/Rotate/Z", euler.z);
+            }
+        }
         float rotate_x = config_->property("Transform/Rotate/X").toDouble();
         float rotate_y = config_->property("Transform/Rotate/Y").toDouble();
         float rotate_z = config_->property("Transform/Rotate/Z").toDouble();
         float rotate_w = config_->property("Transform/Rotate/W").toDouble();
-        int rotate_mode = config_->property("Transform/Rotate/Mode").toInt();
-        float scale_x = config_->property("Transform/Scale/X").toDouble();
-        float scale_y = config_->property("Transform/Scale/Y").toDouble();
-        float scale_z = config_->property("Transform/Scale/Z").toDouble();
         SMESH_INFO("UpdateTransformFromConfig Scale ({}, {}, {})", scale_x, scale_y, scale_z);
         transform_->set_translate({translate_x, translate_y, translate_z});
         transform_->set_scale({scale_x, scale_y, scale_z});

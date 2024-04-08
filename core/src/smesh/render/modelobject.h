@@ -19,7 +19,7 @@ namespace smesh
         ModelObject(const std::string &path);
         ModelObject();
         ~ModelObject();
-        void UpdateTransformFromConfig();
+        void UpdateTransformFromConfig(bool is_rotate_mode_change = false);
         void UpdateConfigFromTransform();
         std::string name() { return name_; }
         std::shared_ptr<Mesh> mesh() { return mesh_; }

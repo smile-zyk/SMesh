@@ -115,7 +115,7 @@ namespace smesh
 
       signals:
         void propertyChanged(const PropertyKey& key, QVariant value);
-        void triggeredPropertyChanged(const PropertyKey& key, QVariant value);
+        void triggeredPropertyChanged(const PropertyKey& key, QVariant value, QVariant old_value);
 
       private:
         // Config can't modify def

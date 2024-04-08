@@ -303,9 +303,10 @@ namespace smesh
     {
         if(IsKeyValid(key))
         {
+            QVariant old_value = config_map_[key];
             config_map_[key] = value;
             if(is_triggered)
-                emit triggeredPropertyChanged(key, value);
+                emit triggeredPropertyChanged(key, value, old_value);
             else
                 emit propertyChanged(key, value);
             return true;
