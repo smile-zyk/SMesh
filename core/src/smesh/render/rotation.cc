@@ -53,12 +53,12 @@ namespace smesh
     
     void Rotation::set_axis_angle(const AxisAngle& rotate_axis_angle)
     {
-        quat_ = glm::angleAxis(rotate_axis_angle.angle, rotate_axis_angle.axis);
+        quat_ = glm::angleAxis(glm::radians(rotate_axis_angle.angle), glm::normalize(rotate_axis_angle.axis));
     }
     
     void Rotation::set_quaternion(const glm::quat& rotate_quat)
     {
-        quat_ = rotate_quat;
+        quat_ = glm::normalize(rotate_quat);
     }
 
     glm::vec3 Rotation::euler(int euler_mode)

@@ -28,12 +28,12 @@ namespace smesh
     void Renderer::Init()
     {
         SMESH_TRACE("Render Init Begin");
-        auto object_shader_program = std::make_unique<glwrapper::ShaderProgram>("D:/repos/SMesh/core/src/smesh/render/shader/object_vertex.glsl",
-                                                                                   "D:/repos/SMesh/core/src/smesh/render/shader/object_fragment.glsl",
-                                                                                   "D:/repos/SMesh/core/src/smesh/render/shader/object_geometry.glsl");
+        auto object_shader_program = std::make_unique<glwrapper::ShaderProgram>("D:/Dev/SMesh/core/src/smesh/render/shader/object_vertex.glsl",
+                                                                                   "D:/Dev/SMesh/core/src/smesh/render/shader/object_fragment.glsl",
+                                                                                   "D:/Dev/SMesh/core/src/smesh/render/shader/object_geometry.glsl");
 
-        auto grid_shader_program = std::make_unique<glwrapper::ShaderProgram>("D:/repos/SMesh/core/src/smesh/render/shader/grid_vertex.glsl",
-                                                                              "D:/repos/SMesh/core/src/smesh/render/shader/grid_fragment.glsl");
+        auto grid_shader_program = std::make_unique<glwrapper::ShaderProgram>("D:/Dev/SMesh/core/src/smesh/render/shader/grid_vertex.glsl",
+                                                                              "D:/Dev/SMesh/core/src/smesh/render/shader/grid_fragment.glsl");
 
         shader_program_map_.insert({"object_shader", std::move(object_shader_program)});
         shader_program_map_.insert({"grid_shader", std::move(grid_shader_program)});
@@ -130,7 +130,6 @@ namespace smesh
         static long long current_fps = 0;
         // Must check whether current_frame_time is 0
         // Otherwise the program in Release mode maybe fail the first time it starts
-        // update: This problem is resolved by changing steady_clock to high_resolution_clock, but it is recommended to determine whether current_frame_time_ is 0, so leave the if
         if (current_frame_time_.count() != 0)
         {
             current_fps = std::chrono::seconds{1} / current_frame_time_;
