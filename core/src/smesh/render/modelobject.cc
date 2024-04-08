@@ -56,7 +56,7 @@ namespace smesh
                 config_->set_property("Transform/Rotate/X", axis_angle.axis.x);
                 config_->set_property("Transform/Rotate/Y", axis_angle.axis.y);
                 config_->set_property("Transform/Rotate/Z", axis_angle.axis.z);
-                config_->set_property("Transform/Rotate/W", glm::degrees(axis_angle.angle));
+                config_->set_property("Transform/Rotate/W", axis_angle.angle);
             }
             else if(rotate_mode == RotationMode::kQuaternion)
             {
@@ -103,7 +103,6 @@ namespace smesh
     {
         glm::vec3 translate = transform_->translate();
         glm::vec3 scale = transform_->scale();
-        SMESH_INFO("UpdateConfigFromTransform Scale ({}, {}, {})", scale.x, scale.y, scale.z);
         int rotate_mode = config_->property("Transform/Rotate/Mode").toInt();
         config_->set_property("Transform/Translate/X", translate.x);
         config_->set_property("Transform/Translate/Y", translate.y);
@@ -127,7 +126,7 @@ namespace smesh
             config_->set_property("Transform/Rotate/Z", quat.z);
             config_->set_property("Transform/Rotate/W", quat.w);
         }
-        else 
+        else
         {
             auto euler = transform_->rotate()->euler(rotate_mode);
             config_->set_property("Transform/Rotate/X", euler.x);

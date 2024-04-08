@@ -4,7 +4,10 @@ project(application VERSION 0.0.1 LANGUAGES CXX)
 
 aux_source_directory(src SRC_DIR)
 
+message("CMAKE_AUTORCC is ${CMAKE_AUTORCC}")
+
 qt5_add_resources(QRC_FILES
+ resources/application.qrc
  resources/qdarkstyle/dark/darkstyle.qrc
  resources/qdarkstyle/light/lightstyle.qrc
  )

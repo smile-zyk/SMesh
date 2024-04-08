@@ -38,10 +38,10 @@ enum RotationMode
 
 enum EulerMode
 {
-    kXYZ = 0,
-    kXZY = 1,
-    kYXZ = 2,
-    kYZX = 3,
-    kZXY = 4,
-    kZYX = 5,
+    kZYX = 0,
+    kYZX = 1,
+    kZXY = 2,
+    kXZY = 3,
+    kYXZ = 4,
+    kXYZ = 5,
 };

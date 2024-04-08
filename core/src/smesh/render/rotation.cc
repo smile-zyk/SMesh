@@ -23,8 +23,8 @@ namespace smesh
     {
         quat_ = rotate_quat;
     }
-    
-    void Rotation::set_euler(int euler_mode, const glm::vec3& rotate_degree)
+
+    void Rotation::set_euler(int euler_mode, const glm::vec3 &rotate_degree)
     {
         glm::mat4 rotate_matrix{1.0};
         switch (euler_mode)
@@ -50,13 +50,13 @@ namespace smesh
         }
         quat_ = glm::quat_cast(rotate_matrix);
     }
-    
-    void Rotation::set_axis_angle(const AxisAngle& rotate_axis_angle)
+
+    void Rotation::set_axis_angle(const AxisAngle &rotate_axis_angle)
     {
         quat_ = glm::angleAxis(glm::radians(rotate_axis_angle.angle), glm::normalize(rotate_axis_angle.axis));
     }
-    
-    void Rotation::set_quaternion(const glm::quat& rotate_quat)
+
+    void Rotation::set_quaternion(const glm::quat &rotate_quat)
     {
         quat_ = glm::normalize(rotate_quat);
     }
@@ -98,7 +98,7 @@ namespace smesh
     {
         float angle = glm::angle(quat_);
         glm::vec3 axis = glm::axis(quat_);
-        return {axis, angle};
+        return {axis, glm::degrees(angle)};
     }
 
     glm::mat4 Rotation::matrix()
