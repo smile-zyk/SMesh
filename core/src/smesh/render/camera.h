@@ -22,7 +22,7 @@ namespace smesh
       private:
         float fov_ {60};
         float znear_ {0.01f};
-        float zfar_ {500};
+        float zfar_ {2000};
         float aspect_ {1.777f};
         glm::vec3 eye_ = {10.f, 10.f, 10.f};
         glm::vec3 target_ = {0.0f, 0.0f, 0.0f};

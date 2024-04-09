@@ -16,7 +16,9 @@ vec3 grid_plane[6] = vec3[]
 
 vec3 NDC2World(vec3 p_ndc, mat4 view, mat4 proj)
 {
-    vec4 p_world = inverse(proj * view) * vec4(p_ndc, 1.0);
+    mat4 view_inv = inverse(view);
+    mat4 proj_inv = inverse(proj);
+    vec4 p_world = view_inv * proj_inv * vec4(p_ndc, 1.0);
     return p_world.xyz / p_world.w;
 }
 

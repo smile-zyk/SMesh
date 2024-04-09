@@ -1,4 +1,5 @@
 #include "camera.h"
+#include <glm/ext/quaternion_common.hpp>
 #include <glm/ext/vector_relational.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <optional>
@@ -36,12 +37,11 @@ namespace smesh
         glm::vec3 cur_trackball_coord = cur_trackball_opt != std::nullopt ? cur_trackball_opt.value(): glm::vec3();
         bool is_equal = glm::all(glm::equal(last_trackball_coord, cur_trackball_coord, FLT_EPSILON));
         if(is_equal) return;
-
+        
         glm::vec3 rotate_axis_in_view_space = glm::normalize(glm::cross(last_trackball_coord, cur_trackball_coord));
         glm::quat view_rotate = glm::quat_cast(glm::inverse(glm::mat3(GetViewMatrix())));
         glm::vec3 rotate_axis_in_world_space = view_rotate * rotate_axis_in_view_space;
         float rotate_angle = glm::acos(fmin(1.0f, glm::dot(last_trackball_coord, cur_trackball_coord)));
-        rotate_angle *= 2;
         glm::quat rotate_quat = glm::quat(cos(rotate_angle / 2),
                             rotate_axis_in_world_space.x * sin(rotate_angle / 2),
                             rotate_axis_in_world_space.y * sin(rotate_angle / 2),
