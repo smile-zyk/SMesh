@@ -59,6 +59,11 @@ namespace glwrapper
         GLCall(glDrawElements(mode, count, type, 0));
     }
     
+    void set_cull_face_mode(GLenum mode)
+    {
+        GLCall(glCullFace(mode));
+    }
+    
     void set_blend_func(GLenum sfactor, GLenum dfactor)
     {
         GLCall(glBlendFunc(sfactor, dfactor));

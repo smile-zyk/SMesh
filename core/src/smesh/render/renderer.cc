@@ -40,6 +40,7 @@ namespace smesh
         glwrapper::set_clear_color(0.2f, 0.2f, 0.2f, 1.0f);
         glwrapper::enable(GL_DEPTH_TEST);
         glwrapper::enable(GL_BLEND);
+        glwrapper::enable(GL_CULL_FACE);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         SMESH_TRACE("Render Init End");
     }
@@ -139,7 +140,9 @@ namespace smesh
         grid_shader->set_uniform_value("view_matrix", camera_->GetViewMatrix());
         grid_shader->set_uniform_value("projection_matrix", camera_->GetProjectionMatrix());
         grid_shader->set_uniform_value("view_position", camera_->eye());
+        glwrapper::disable(GL_CULL_FACE);
         glwrapper::draw_arrays(GL_TRIANGLES, 6);
+        glwrapper::enable(GL_CULL_FACE);
     }
 
     static float line_width = 1.5;
