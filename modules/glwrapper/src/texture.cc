@@ -1,9 +1,15 @@
 #include "texture.h"
+#include "glcommon.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 #include <cmath>
 
 using namespace glwrapper;
+
+Texture::Texture(GLenum type)
+{
+	GLCall(glCreateTextures(type, 1, &id));
+}
 
 Texture::Texture(GLenum type, const char* path)
 {
@@ -36,9 +42,49 @@ Texture::Texture(GLenum type, const char* path)
 	}
 	else if (GL_TEXTURE_3D == type)
 	{
-		// process 3D Texture
+		// TODO: process 3D Texture
 	}
 	stbi_image_free(data);
+}
+
+void Texture::storage1d(GLsizei levels, GLenum internalformat, GLsizei width)
+{
+	GLCall(glTextureStorage1D(id, levels, internalformat, width));
+}
+
+void Texture::storage2d(GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height)
+{
+	GLCall(glTextureStorage2D(id, levels, internalformat, width, height));
+}
+
+void Texture::storage2d_multisample(GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height, GLboolean fixedsamplelocations)
+{
+	GLCall(glTextureStorage2DMultisample(id, samples, internalformat, width, height, fixedsamplelocations));
+}
+
+void Texture::storage3d(GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth)
+{
+	GLCall(glTextureStorage3D(id, levels, internalformat, width, height, depth));
+}
+
+void Texture::storage3d_multisample(GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, GLboolean fixedsamplelocations)
+{
+	GLCall(glTextureStorage3DMultisample(id, samples, internalformat, width, height, depth, fixedsamplelocations));
+}
+
+void Texture::sub_image1d(GLint level, GLint xoffset, GLsizei width, GLenum format, GLenum type, const void* pixels)
+{
+	GLCall(glTextureSubImage1D(id, level, xoffset, width, format, type, pixels));
+}
+
+void Texture::sub_image2d(GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const void* pixels)
+{
+	GLCall(glTextureSubImage2D(id, level, xoffset, yoffset, width, height, format, type, pixels));
+}
+
+void Texture::sub_image3d(GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, const void* pixels)
+{
+	GLCall(glTextureSubImage3D(id, level, xoffset, yoffset, zoffset, width, height, depth, format, type, pixels));
 }
 
 glwrapper::Texture::~Texture()
