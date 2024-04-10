@@ -1,16 +1,20 @@
 #include "renderer.h"
 #include "buffer.h"
+#include "frame_buffer.h"
 #include "glfunc.h"
+#include "render_buffer.h"
 #include "shader_program.h"
 #include "smesh/log/log.h"
 #include "smesh/render/camera.h"
 #include "smesh/render/modelobject.h"
+#include "texture.h"
 #include "vertex_array.h"
 #include <QtImGui.h>
 #include <imgui.h>
 #include <ImGuizmo.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <memory>
+#include <qopenglext.h>
 
 
 namespace smesh
@@ -232,6 +236,23 @@ namespace smesh
         vao.enable_attrib(2);
         vao.bind_element_buffer(ebo);
         vao.bind();
+        // glwrapper::Texture tex(GL_TEXTURE_2D);
+		// glwrapper::FrameBuffer fbo;
+        // glwrapper::RenderBuffer buf;
+        // if(object->is_selected())
+        // {
+        //     int levels = static_cast<int>(std::log(std::fmax(width_, height_)) + 1);
+        //     tex.storage2d(levels, GL_RGBA8, width_, height_);
+        //     tex.set_minification_filter(GL_LINEAR);
+        //     tex.set_magification_filter(GL_LINEAR);
+        //     fbo.bind_texture(GL_COLOR_ATTACHMENT0, tex, 0);
+        //     buf.storage(GL_DEPTH24_STENCIL8, width_, height_);
+        //     fbo.bind_render_buffer(GL_DEPTH_STENCIL_ATTACHMENT, buf);
+        //     if(fbo.check_status() == GL_FRAMEBUFFER_COMPLETE)
+        //     {
+        //         fbo.bind();
+        //     }
+        // }
         auto &object_shader = shader_program_map_.at("object_shader");
         object_shader->use();
         object_shader->set_uniform_value("model_matrix", object->transform_matrix());
@@ -244,5 +265,6 @@ namespace smesh
         bool is_wireframe = render_mode_ == RenderMode::kWireframe ? true : false;
         object_shader->set_uniform_value("is_wireframe", is_wireframe);
         glwrapper::draw_elements(GL_TRIANGLES, GL_UNSIGNED_INT, vao);
+        // fbo.unbind();
     }
 } // namespace smesh
