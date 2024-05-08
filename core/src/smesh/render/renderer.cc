@@ -9,13 +9,12 @@
 #include "smesh/render/modelobject.h"
 #include "texture.h"
 #include "vertex_array.h"
-#include <QtImGui.h>
 #include <imgui.h>
 #include <ImGuizmo.h>
+#include <QtImGui.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <memory>
 #include <qopenglext.h>
-
 
 namespace smesh
 {
@@ -38,13 +37,18 @@ namespace smesh
         auto grid_shader_program = std::make_unique<glwrapper::ShaderProgram>("D:/Dev/SMesh/core/src/smesh/render/shader/grid_vertex.glsl",
                                                                               "D:/Dev/SMesh/core/src/smesh/render/shader/grid_fragment.glsl");
 
+        auto outline_shader_program = std::make_unique<glwrapper::ShaderProgram>("D:/Dev/SMesh/core/src/smesh/render/shader/outline_vertex.glsl",
+                                                                                 "D:/Dev/SMesh/core/src/smesh/render/shader/outline_fragment.glsl");
+
         shader_program_map_.insert({"object_shader", std::move(object_shader_program)});
         shader_program_map_.insert({"grid_shader", std::move(grid_shader_program)});
+        shader_program_map_.insert({"outline_shader", std::move(outline_shader_program)});
         camera_ = std::make_unique<Camera>();
         glwrapper::set_clear_color(0.2f, 0.2f, 0.2f, 1.0f);
         glwrapper::enable(GL_DEPTH_TEST);
         glwrapper::enable(GL_BLEND);
         glwrapper::enable(GL_CULL_FACE);
+        glwrapper::enable(GL_LINE_SMOOTH);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         SMESH_TRACE("Render Init End");
     }
@@ -150,6 +154,9 @@ namespace smesh
     }
 
     static float line_width = 1.5;
+    static float outline_width = 2;
+    static glm::vec3 outline_color{1.0f, 1.0f, 1.0f};
+    static int is_smooth_shading = 0;
 
     static ImGuizmo::OPERATION GetGizmoOperation(GizmoMode mode)
     {
@@ -184,14 +191,29 @@ namespace smesh
         }
         ImGui::Begin("Debug");
         ImGui::Text("FPS: %lld", current_fps);
-        static int mode = 0;
-        ImGui::RadioButton("Object Mode", &mode, 0);
-        ImGui::RadioButton("Edit Mode", &mode, 1);
-        render_mode_ = (mode == 0) ? RenderMode::kObject : RenderMode::kWireframe;
-        if (render_mode_ == RenderMode::kWireframe)
+        if (ImGui::CollapsingHeader("Mode"))
         {
-            ImGui::SliderFloat("LineWidth", &line_width, 0, 5);
+            static int mode = 0;
+            ImGui::RadioButton("Object Mode", &mode, 0);
+            ImGui::RadioButton("Edit Mode", &mode, 1);
+            render_mode_ = (mode == 0) ? RenderMode::kObject : RenderMode::kWireframe;
+            if (render_mode_ == RenderMode::kWireframe)
+            {
+                ImGui::SliderFloat("LineWidth", &line_width, 0, 5);
+            }
         }
+        if (ImGui::CollapsingHeader("Shading"))
+        {
+            ImGui::RadioButton("Smooth", &is_smooth_shading, 1);
+            ImGui::RadioButton("Flat", &is_smooth_shading, 0);
+        }
+        if (ImGui::CollapsingHeader("Selected"))
+        {
+            ImGui::SliderFloat("Outline Width", &outline_width, 0, 5);
+            ImGui::ColorEdit3("Outline Color", &outline_color[0]);
+        }
+        
+        // Imguizmo draw
         for (int i = 0; i < object_list_.size(); i++)
         {
             auto obj = object(i);
@@ -236,35 +258,46 @@ namespace smesh
         vao.enable_attrib(2);
         vao.bind_element_buffer(ebo);
         vao.bind();
-        // glwrapper::Texture tex(GL_TEXTURE_2D);
-		// glwrapper::FrameBuffer fbo;
-        // glwrapper::RenderBuffer buf;
-        // if(object->is_selected())
-        // {
-        //     int levels = static_cast<int>(std::log(std::fmax(width_, height_)) + 1);
-        //     tex.storage2d(levels, GL_RGBA8, width_, height_);
-        //     tex.set_minification_filter(GL_LINEAR);
-        //     tex.set_magification_filter(GL_LINEAR);
-        //     fbo.bind_texture(GL_COLOR_ATTACHMENT0, tex, 0);
-        //     buf.storage(GL_DEPTH24_STENCIL8, width_, height_);
-        //     fbo.bind_render_buffer(GL_DEPTH_STENCIL_ATTACHMENT, buf);
-        //     if(fbo.check_status() == GL_FRAMEBUFFER_COMPLETE)
-        //     {
-        //         fbo.bind();
-        //     }
-        // }
+        auto mvp_matrix = camera_->GetProjectionMatrix() * camera_->GetViewMatrix() * object->transform_matrix();
         auto &object_shader = shader_program_map_.at("object_shader");
         object_shader->use();
         object_shader->set_uniform_value("model_matrix", object->transform_matrix());
         object_shader->set_uniform_value("view_matrix", camera_->GetViewMatrix());
         object_shader->set_uniform_value("projection_matrix", camera_->GetProjectionMatrix());
+        object_shader->set_uniform_value("mvp_matrix", mvp_matrix);
         object_shader->set_uniform_value("view_position", camera_->eye());
         object_shader->set_uniform_value("viewport_x", width_);
         object_shader->set_uniform_value("viewport_y", height_);
         object_shader->set_uniform_value("line_width", line_width);
         bool is_wireframe = render_mode_ == RenderMode::kWireframe ? true : false;
         object_shader->set_uniform_value("is_wireframe", is_wireframe);
-        glwrapper::draw_elements(GL_TRIANGLES, GL_UNSIGNED_INT, vao);
+        object_shader->set_uniform_value("is_smooth", is_smooth_shading);
+        if (object->is_selected())
+        {
+            glEnable(GL_STENCIL_TEST);
+            glClear(GL_STENCIL_BUFFER_BIT);
+            glStencilFunc(GL_ALWAYS, 1, -1);
+            glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+            glwrapper::draw_elements(GL_TRIANGLES, GL_UNSIGNED_INT, vao);
+            glStencilFunc(GL_NOTEQUAL, 1, -1);
+            glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+            glLineWidth(outline_width);
+            glPolygonMode(GL_FRONT, GL_LINE);
+            auto &outline_shader = shader_program_map_.at("outline_shader");
+            outline_shader->use();
+            outline_shader->set_uniform_value("model_matrix", object->transform_matrix());
+            outline_shader->set_uniform_value("view_matrix", camera_->GetViewMatrix());
+            outline_shader->set_uniform_value("projection_matrix", camera_->GetProjectionMatrix());
+            outline_shader->set_uniform_value("mvp_matrix", mvp_matrix);
+            outline_shader->set_uniform_value("outline_color", outline_color);
+            glwrapper::draw_elements(GL_TRIANGLES, GL_UNSIGNED_INT, vao);
+            glDisable(GL_STENCIL_TEST);
+            glPolygonMode(GL_FRONT, GL_FILL);
+        }
+        else
+        {
+            glwrapper::draw_elements(GL_TRIANGLES, GL_UNSIGNED_INT, vao);
+        }
         // fbo.unbind();
     }
 } // namespace smesh
