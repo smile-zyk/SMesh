@@ -56,14 +56,12 @@ void main()
     vec3 result_color = CalculateLightColor(light, material, frag_position, frag_normal, view_position);
     if(is_wireframe)
     {
-        float min_dis = min(min(edge_distance.x, edge_distance.y), edge_distance.z);
-        if(min_dis < 0.5 * line_width + 1)
-        {
-            float value = clamp(min_dis - (0.5 * line_width - 1), 0, 2);
-            float alpha = 1 - smoothstep(0.0, 2.0, value);
-            frag_color = vec4((result_color * (1 - alpha) + line_color * alpha).xyz, 1.0);
-            return;
-        }
+        vec3 d = fwidth(edge_distance);
+        vec3 a3 = smoothstep(vec3(0), d * line_width, edge_distance);
+        float alpha = min(min(a3.x, a3.y), a3.z);
+        vec3 color = mix(line_color, result_color, alpha);
+        frag_color = vec4(color, 1.0);
+        return;
     }
     frag_color = vec4(result_color, 1.0);
 }

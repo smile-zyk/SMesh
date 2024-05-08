@@ -34,14 +34,14 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
             ui->render_widget->LoadModelObject(fileName);
         }
     });
-    connect(ui->actiontest, &QAction::triggered, this, [this]()
-    {
-        auto idx = ui->object_list->selectionModel()->currentIndex();
-        if(idx.isValid())
-        {
-            ui->render_widget->renderer()->object(idx.row())->config()->set_property("Transform/Translate", QVector3D(1, 3, 5));
-        }
-    });
+    // connect(ui->actiontest, &QAction::triggered, this, [this]()
+    // {
+    //     auto idx = ui->object_list->selectionModel()->currentIndex();
+    //     if(idx.isValid())
+    //     {
+    //         ui->render_widget->renderer()->object(idx.row())->config()->set_property("Transform/Translate", QVector3D(1, 3, 5));
+    //     }
+    // });
     // ui->tabWidget->setTabVisible(1, true);
     connect(ui->render_widget, &smesh::RenderWidget::AddObject, this, [list_model, this]()
             { list_model->UpdateObject(static_cast<int>(ui->render_widget->renderer()->object_count() - 1)); });

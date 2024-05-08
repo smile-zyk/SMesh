@@ -80,7 +80,6 @@
      <string>File</string>
     </property>
     <addaction name="actionOpen"/>
-    <addaction name="actiontest"/>
    </widget>
    <addaction name="menuFile"/>
   </widget>
@@ -90,7 +89,7 @@
     <string>Open</string>
    </property>
   </action>
-  <action name="actiontest">
+  <action name="action">
    <property name="text">
     <string>test</string>
    </property>
