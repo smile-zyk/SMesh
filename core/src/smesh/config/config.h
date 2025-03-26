@@ -1,6 +1,5 @@
 #pragma once
 
-#include "smesh/config/config.h"
 #include "smesh/core.h"
 #include <QMap>
 #include <QString>
@@ -9,7 +8,6 @@
 #include <QObject>
 #include <functional>
 #include <qvariant.h>
-#include <tuple>
 
 // config system based on QVariant
 

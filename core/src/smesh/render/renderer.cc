@@ -1,13 +1,10 @@
 #include "renderer.h"
 #include "buffer.h"
-#include "frame_buffer.h"
 #include "glfunc.h"
-#include "render_buffer.h"
 #include "shader_program.h"
 #include "smesh/log/log.h"
 #include "smesh/render/camera.h"
 #include "smesh/render/modelobject.h"
-#include "texture.h"
 #include "vertex_array.h"
 #include <imgui.h>
 #include <ImGuizmo.h>
@@ -30,15 +27,15 @@ namespace smesh
     void Renderer::Init()
     {
         SMESH_TRACE("Render Init Begin");
-        auto object_shader_program = std::make_unique<glwrapper::ShaderProgram>("D:/Dev/SMesh/core/src/smesh/render/shader/object_vertex.glsl",
-                                                                                "D:/Dev/SMesh/core/src/smesh/render/shader/object_fragment.glsl",
-                                                                                "D:/Dev/SMesh/core/src/smesh/render/shader/object_geometry.glsl");
+        auto object_shader_program = std::make_unique<glwrapper::ShaderProgram>("shader/object_vertex.glsl",
+                                                                                "shader/object_fragment.glsl",
+                                                                                "shader/object_geometry.glsl");
 
-        auto grid_shader_program = std::make_unique<glwrapper::ShaderProgram>("D:/Dev/SMesh/core/src/smesh/render/shader/grid_vertex.glsl",
-                                                                              "D:/Dev/SMesh/core/src/smesh/render/shader/grid_fragment.glsl");
+        auto grid_shader_program = std::make_unique<glwrapper::ShaderProgram>("shader/grid_vertex.glsl",
+                                                                              "shader/grid_fragment.glsl");
 
-        auto outline_shader_program = std::make_unique<glwrapper::ShaderProgram>("D:/Dev/SMesh/core/src/smesh/render/shader/outline_vertex.glsl",
-                                                                                 "D:/Dev/SMesh/core/src/smesh/render/shader/outline_fragment.glsl");
+        auto outline_shader_program = std::make_unique<glwrapper::ShaderProgram>("shader/outline_vertex.glsl",
+                                                                                 "shader/outline_fragment.glsl");
 
         shader_program_map_.insert({"object_shader", std::move(object_shader_program)});
         shader_program_map_.insert({"grid_shader", std::move(grid_shader_program)});

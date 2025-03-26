@@ -11,7 +11,6 @@
 #include <glm/gtx/euler_angles.hpp>
 #include "rotation.h"
 #include "smesh/common.h"
-#include "smesh/log/log.h"
 #include "smesh/render/transform.h"
 
 namespace smesh
@@ -22,6 +21,9 @@ namespace smesh
         mesh_ = std::make_shared<Mesh>(path);
         transform_ = std::make_unique<Transform>();
         config_ = ModelObjectConfig::CreateUnique(this);
+        config_->set_property("Information/Vertex Count", mesh_->n_vertices());
+        config_->set_property("Information/Edge Count", mesh_->n_edges());
+        config_->set_property("Information/Face Count", mesh_->n_faces());
         connect(config_.get(), &Config::triggeredPropertyChanged, this, [this](const PropertyKey& key, QVariant value, QVariant old_value)
         {
             UpdateTransformFromConfig(key == "Transform/Rotate/Mode" && value != old_value);
@@ -78,7 +80,6 @@ namespace smesh
         float rotate_y = config_->property("Transform/Rotate/Y").toDouble();
         float rotate_z = config_->property("Transform/Rotate/Z").toDouble();
         float rotate_w = config_->property("Transform/Rotate/W").toDouble();
-        SMESH_INFO("UpdateTransformFromConfig Scale ({}, {}, {})", scale_x, scale_y, scale_z);
         transform_->set_translate({translate_x, translate_y, translate_z});
         transform_->set_scale({scale_x, scale_y, scale_z});
         switch (rotate_mode) {

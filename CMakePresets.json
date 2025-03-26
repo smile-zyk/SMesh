@@ -9,10 +9,27 @@
                 "CMAKE_CONFIGURATION_TYPES": "Debug;Release;RelWithDebInfo",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": true,
                 "CMAKE_TOOLCHAIN_FILE": {
-                    "value": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+                    "value": "C:/msys64/vcpkg/scripts/buildsystems/vcpkg.cmake",
                     "type": "FILEPATH"
                 }
             }
+        },
+        {
+            "name": "Windows-Mingw-Config",
+            "inherits": "Config-Base",
+            "cacheVariables": {
+                "CMAKE_CXX_COMPILER": "g++",
+                "CMAKE_C_COMPILER": "gcc",
+                "VCPKG_TARGET_TRIPLET" : "x64-mingw-dynamic",
+                "VCPKG_HOST_TRIPLET" : "x64-mingw-dynamic"
+            },
+            "architecture": {
+                "value": "x64"
+            },
+            "toolset": {
+                "value": "host=x64"
+            },
+            "binaryDir": "build/x64"
         },
         {
             "name": "Windows-Config-Base",
@@ -76,6 +93,16 @@
             "name": "x86-Windows-Build-RelWithDebInfo",
             "configurePreset": "x86-Windows-Config",
             "configuration": "RelWithDebInfo"
+        },
+        {
+            "name": "x64-Windows-MinGW-Debug",
+            "configurePreset": "Windows-Mingw-Config",
+            "configuration": "Debug"
+        },
+        {
+            "name": "x64-Windows-MinGW-Release",
+            "configurePreset": "Windows-Mingw-Config",
+            "configuration": "Release"
         }
     ],
     "testPresets": [

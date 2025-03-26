@@ -24,7 +24,6 @@ void glwrapper::GLClearError()
 
 bool glwrapper::GLLogCall(const char* function, const char* file, int line)
 {
-	
 	while (GLenum error = glGetError())
 	{
 		gl_logger->error("error code {} in func {}, file {}, line {}", error, function, file, line);

@@ -3,6 +3,7 @@
 #include <glm/ext/vector_relational.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <optional>
+#include <float.h>
 
 namespace smesh
 {

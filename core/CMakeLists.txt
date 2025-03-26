@@ -28,3 +28,10 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE SMESH_PLATFORM_WINDOWS SMESH_
 target_compile_definitions(${PROJECT_NAME} PRIVATE _USE_MATH_DEFINES)
 target_compile_definitions(${PROJECT_NAME} PRIVATE _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING)
 target_compile_definitions(${PROJECT_NAME} PUBLIC GLM_ENABLE_EXPERIMENTAL)
+
+add_custom_command(
+    TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/smesh/render/shader
+        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/shader
+)
